@@ -1,0 +1,132 @@
+\documentclass[12pt,letterpaper]{ntdhw}
+
+
+\usepackage{ntdmath}
+
+\title{Project 1: Regular Languages and Pursuit-Evasion}
+\author{CSCI 561}
+
+\rhead{Names:}
+
+%\keytrue
+
+\begin{document}
+\pagestyle{fancyplain}
+
+\maketitle
+\thispagestyle{fancyplain}
+%\clearpage
+
+
+
+\section*{Application: Text Processing with Grep}
+
+\begin{quote}
+  \emph{\texttt{grep} is a unix utility that searches text for lines
+    matching a regular expression.}
+\end{quote}
+
+\begin{enumerate}
+  \item \textbf{Using Grep:} Use the standard unix (or GNU)
+  \texttt{grep} and the implementation in this project to search the
+  starter code for all \texttt{TODO}s.
+
+  \item \textbf{NFA vs. DFA Simulation:} The original grep utility (as
+  written by Ken Thompson) converted the provided regular expression
+  to an NFA and then simulated the NFA on the input text.  Why would
+  Thompson have used NFA simulation instead of DFA simulation?
+
+  \item \textbf{Time Complexity:} To simulate an NFA
+  $N=\lmtuple{Q}{\Sigma}{\delta}{q_0}{F}$ on string $\sigma$ using the
+  algorithm in the original grep (which is roughly equivalent to the
+  NFA simulation algorithm covered in lecture) requires
+  $O(|Q|*|\sigma|)$ time. However, many ``regex'' engines (including the
+  popular implementation in Perl) exhibit worst-case complexity that
+  is exponential in $|\sigma|$.
+
+  \begin{enumerate}
+    \item Prove that NFA simulation is possible in $O(|Q|*|\sigma|)$
+    time.%
+
+    \item Why is there such a difference in performance between
+    Thompson's grep and some other ``regex'' engines?
+  \end{enumerate}
+
+
+
+
+\end{enumerate}
+
+\clearpage
+\section*{Application: Discrete Event Systems Model of Pursuit-Evasion}
+
+\begin{figure}[b]
+  \centering
+  \begin{tikzpicture}
+    \draw[step=1cm,gray,very thin,xshift=.5cm,yshift=.5cm] (-1,-1) grid (2,2);
+    \node at (0cm,2cm) {W};
+    \node at (0cm,0cm) {H};
+    \node at (1cm,1cm) {O};
+    \node at (2cm,2cm) {E};
+  \end{tikzpicture}
+  \caption{Example wumpus-world map.  W represents the initial
+    location of the wumpus.  H represents the initial location of the
+    human.  E represents the escape location.  O represents an
+    obstacle that neither the human nor wumpus can move into.}
+  \label{fig:map}
+\end{figure}
+
+\begin{quote}
+
+\emph{\emph{Pursuit-evasion games} are scenarios with multiple agents
+  where one agent attempts to avoid capture by another.  Consider a
+  variation of pursuit-evasion games as follows:}
+
+\begin{itemize}
+  \item \it Two agents share a grid environment: a human (evader) and wumpus
+  (pursuer).
+  \item \it The human and wumpus alternate moves on the grid.  The
+  wumpus moves each turn up, down, left or right.  The human can move
+  up, down, left, right, or remain in place.  You may assume that the
+  human moves first.
+  \item \it If the wumpus and human ever occupy the same grid cell,
+  the wumpus eats the human.
+  \item \it If the human reaches a designated grid cell, they escape.
+\end{itemize}
+
+\emph{Answer the following questions using your implementation of finite
+automata operations for support.}
+
+\end{quote}
+
+\begin{enumerate}
+
+  \item For the map in \autoref{fig:map}, construct a discrete event
+  system model.  Assume that the human's movements are controllable
+  and that the wumpus's movements are not controllable.
+
+  \item For your DES model of \autoref{fig:map}, construct a specification
+  for the human to avoid the wumpus and escape.
+  \begin{enumerate}
+    \item Can the human guarantee to avoid being eaten, no matter what
+    the wumpus does?  Prove yes or no via automata operations.
+    \item Can the human always to escape in finite time (fixed
+    number of steps), no matter what the wumpus does?  Prove yes or
+    no.
+  \end{enumerate}
+
+  \item Design a map where the wumpus can always eat the human and
+  prove via a DES model that this is the case.
+
+  \item Design a map where the human can always escape and prove via a
+  DES model that this is the case.
+
+\end{enumerate}
+
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
