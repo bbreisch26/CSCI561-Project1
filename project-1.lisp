@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;
-;;;; Utilities ;;;;
+;136;0c;;;; Utilities ;;;;
 ;;;;;;;;;;;;;;;;;;;
 
 (defun hash-table-keys (hash-table)
@@ -281,8 +281,8 @@
   (assert (dfa-p dfa))
   (labels ((edelta (state list)
              (if (null list)
-		 (state)
-		(edelta ((funcall dfa-transition dfa state (car list)) (cdr list))))))
+		 state
+		(edelta (dfa-transition dfa state (car list)) (cdr list)))))
     (let ((final-state (edelta (finite-automaton-start dfa)
                                (coerce sequence 'list)))) ; Coerce to list for simplicity
       (if (find final-state (finite-automaton-accept dfa) :test #'equal)
