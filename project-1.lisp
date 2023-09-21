@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;
-;136;0c;;;; Utilities ;;;;
+;136;0c;;;; Utilities ;;;
 ;;;;;;;;;;;;;;;;;;;
 
 (defun hash-table-keys (hash-table)
@@ -297,14 +297,18 @@
 ;; Subset Construction Lecture: Algorithm 1
 (defun e-closure (nfa s c)
   (labels ((visit (c q)
-             (TODO 'visit)))
-    (TODO 'e-closure)))
+             (if (member q c)
+		 c
+		 ;;Need delta(Q,eps), {q} union C
+		 (e-closure nfa (fa-transition nfa q :epsilon) (union (make-seque c)))
+	     ))
+    (fold-left #'visit c s)))
 
 ;; Subset Construction Lecture: Algorithm 2
 (defun move-e-closure (nfa s a)
   (labels ((visit (c q)
-             (TODO 'visit)))
-    (TODO 'move-e-closure)))
+             (e-closure nfa (fa-transition nfa q a) c )))
+    (fold-left #'visit nil (e-closure nfa s nil))))
 
 ;; Subset Construction Lecture: Algorithm 4
 (defun nfa-simulate (nfa sequence)
