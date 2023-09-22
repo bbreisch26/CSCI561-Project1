@@ -302,7 +302,7 @@
 		 ;;Need delta(Q,eps), {q} union C
 		 (e-closure nfa (fa-transition nfa q :epsilon) (union (make-seque c)))
 	     ))
-    (fold-left #'visit c s)))
+    (fold-left #'visit c s))))
 
 ;; Subset Construction Lecture: Algorithm 2
 (defun move-e-closure (nfa s a)
