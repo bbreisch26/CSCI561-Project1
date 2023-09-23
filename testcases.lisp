@@ -32,7 +32,7 @@
 ;;; Part 0: DFA Simulation ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(print (dfa-simulate *dfa-0* '(0 1)))
+(print (dfa-simulate *dfa-1* '(0 1 0)))
 ;; => t
 
 
