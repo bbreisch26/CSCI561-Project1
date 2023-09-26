@@ -441,7 +441,20 @@
   "Find the union of NFA-1 and NFA-2."
   (assert (not (intersection (finite-automaton-states nfa-1)
                              (finite-automaton-states nfa-2))))
-  (TODO 'fa-union))
+  (let ((start (newstate))
+        (accept (newstate)))
+    (make-fa (append (list (list start :epsilon (finite-automaton-start nfa-1)))
+                     (list (list start :epsilon (finite-automaton-start nfa-2)))
+		     (map 'list (lambda (x)
+                                  (list x :epsilon accept))
+                          (finite-automaton-accept nfa-1))
+                     (map 'list (lambda (x)
+                                  (list x :epsilon accept))
+                          (finite-automaton-accept nfa-2))
+                     (finite-automaton-edges nfa-1)
+                     (finite-automaton-edges nfa-2))
+             start
+             (list accept))))
 
 ;; Regular Expression Lecture: Kleene-Closure
 (defun fa-repeat (nfa)
