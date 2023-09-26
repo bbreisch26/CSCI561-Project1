@@ -67,6 +67,7 @@
                                     (make-symbol-hash-table)
                                     edges))
           (edge-hash (fold-left #'add-edge-transition
+
                                 (make-symbol-hash-table)
                                 edges)))
       (make-finite-automaton
@@ -265,7 +266,6 @@
                 (finite-automaton-start dfa)
                 (finite-automaton-accept dfa)))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; COMPLETE THE FUNCTIONS BELOW ;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -300,9 +300,11 @@
              (if (member q c)
 		 c
 		 ;;Need delta(Q,eps), {q} union C
-		 (e-closure nfa (fa-transition nfa q :epsilon) (union (make-seque c)))
-	     ))
-    (fold-left #'visit c s))))
+		 (e-closure nfa (fa-transition nfa q :epsilon) (union (list q) c))
+	     )))
+	   (fold-left #'visit c s)))
+
+
 
 ;; Subset Construction Lecture: Algorithm 2
 (defun move-e-closure (nfa s a)
