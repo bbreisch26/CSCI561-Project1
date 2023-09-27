@@ -318,8 +318,8 @@
   (labels ((edelta (subset list)
              (if (null list)
 		 subset
-		 (let ((u' (move-e-closure nfa subset (car list))))
-		      (edelta u' (cdr list))))))
+		 (let ((u (move-e-closure nfa subset (car list))))
+		      (edelta u (cdr list))))))
     (let* ((q0 (finite-automaton-start nfa))
            (f (finite-automaton-accept nfa))
            (u (e-closure nfa (list q0) nil))
