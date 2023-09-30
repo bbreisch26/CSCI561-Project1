@@ -411,7 +411,21 @@
                ((atom regex)
                 regex)
                (t (destructuring-bind (operator &rest args) regex
-                    (TODO 'simplify-regex))))))
+		    (case operator
+		      (:.
+		       (if alphabet
+			   `(:union ,@alphabet)
+			   '(:union :epsilon)))
+		      (:?
+		       (if (null args)
+			   `(:union ,@alphabet :epsilon)
+		           `(:union ,@(mapcar #'h args) :epsilon)))
+		      (:+
+		       (if (null args)
+			   `(:concatenation ,@alphabet (:kleene-closure ,@alphabet))
+			   `(:concatenation ,@(mapcar #'h args) (:kleene-closure ,@(mapcar #'h args)))))     
+		      (t
+		       (cons operator(mapcar #'h args)))))))))
     (h regex)))
 
 ;;; The functions FA-CONCATENATE, FA-UNION, and FA-REPEAT apply the
