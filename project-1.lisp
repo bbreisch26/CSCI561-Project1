@@ -493,7 +493,26 @@
                (finite-automaton-edges nfa-2))
              start
              (list accept))))
+;; MYT helper functions - Lecture 7 MYT
+(defun MYT-base (regex)
+  (if (null regex)
+      (make-fa nil (newstate) (list (newstate)))
+      (let ((start (newstate)) (accept (newstate)))
+        (make-fa (list (list start regex accept)) start (list accept)))))
 
+(defun MYT-concatenate (regex)
+  (labels ((conc (m r)
+	     (fa-concatenate m (regex->nfa r))))
+    (if (null regex)
+	(MYT-base :epsilon)
+	(fold-left #'conc (regex->nfa (car regex)) (cdr regex)))))
+
+(defun MYT-union (regex)
+  (labels ((uni (m r)
+	     (fa-union m (regex->nfa r))))
+    (if (null regex)
+	(MYT-base regex)
+	(fold-left #'uni (regex->nfa (car regex)) (cdr regex)))))
   ;; McNaughton-Yamada-Thompson Algorithm Lecture: Algorithm 1
   ;;
   ;; Convert a regular expression to a nondeterministic finite
@@ -506,14 +525,22 @@
   ;; - (:union)
   ;; - (:kleene-closure a)
   ;; - (:concatenation (:union a b) (:kleene-closure c))
-  (defun regex->nfa (regex)
-    "Convert a regular expression to an NFA."
-    (cond
-     ((null regex) ; Base case for empty set
-                  (make-fa nil (newstate) (list (newstate))))
-     ;; TODO: other base cases
-     (t
-       (TODO 'regex->nfa))))
+(defun regex->nfa (regex)
+  "Convert a regular expression to an NFA."
+  (cond
+    ((null regex)
+     (make-fa nil (newstate) (list (newstate))))
+    ((atom regex) ; Base case for empty set, empty string
+     (MYT-base regex))
+    ((eq (car regex) :kleene-closure)
+     (fa-repeat (regex->nfa (first (rest regex)))))
+    ((eq (car regex) :concatenation)
+     (MYT-concatenate (cdr regex)))
+    ((eq (car regex) :union)
+     (MYT-union (cdr regex)))
+     ;;Single symbol or empty set
+    (t nil))
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 3: Regular Decision and Closure Properties ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
