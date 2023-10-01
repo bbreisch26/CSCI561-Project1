@@ -313,7 +313,10 @@
 (defun nfa-simulate (nfa sequence)
   "True if NFA accepts SEQUENCE."
   (labels ((edelta (subset list)
-                   (TODO 'nfa-simulate)))
+             (if (null list)
+		 subset
+		 (let ((u (move-e-closure nfa subset (car list))))
+		      (edelta u (cdr list))))))
     (let* ((q0 (finite-automaton-start nfa))
            (f (finite-automaton-accept nfa))
            (u (e-closure nfa (list q0) nil))
@@ -424,11 +427,32 @@
                       (TODO 'simplify-regex))))))
       (h regex)))
 
-  ;;; The functions FA-CONCATENATE, FA-UNION, and FA-REPEAT apply the
-  ;;; corresponding regular operation (union, concatenation, and
-  ;;; kleene-closure, respectively) to finite automata.  We will next
-  ;;; use these functions as subroutines to convert a regular expression
-  ;;; to an NFA.
+(defun simplify-regex (regex &optional alphabet)
+  "Convert :., :?, :+ to only :union, :concatenation, :kleene-closure"
+  (labels ((h (regex)
+             (cond
+               ((eq regex :.)
+                (assert alphabet)
+                `(:union ,@alphabet))
+               ((atom regex)
+                regex)
+               (t (destructuring-bind (operator &rest args) regex
+		    (case operator
+		      (:.
+		       (if alphabet
+			   `(:union ,@alphabet)
+			   '(:union :epsilon)))
+		      (:?
+		       (if (null args)
+			   `(:union ,@alphabet :epsilon)
+		           `(:union ,@(mapcar #'h args) :epsilon)))
+		      (:+
+		       (if (null args)
+			   `(:concatenation ,@alphabet (:kleene-closure ,@alphabet))
+			   `(:concatenation ,@(mapcar #'h args) (:kleene-closure ,@(mapcar #'h args)))))     
+		      (t
+		       (cons operator(mapcar #'h args)))))))))
+    (h regex)))
 
   ;; Regular Expression Lecture: Concatenation.
   ;; Provided in complete form as an example
@@ -462,26 +486,25 @@
     "Find the repetition / Kleene-closure of NFA."
     (TODO 'fa-repeat))
 
-  ;; McNaughton-Yamada-Thompson Algorithm Lecture: Algorithm 1
-  ;;
-  ;; Convert a regular expression to a nondeterministic finite
-  ;; automaton.
-  ;;
-  ;; The following are examples of possible regular expressions.
-  ;;
-  ;; - (:concatenation a b c)
-  ;; - (:union a b c :epsilon)
-  ;; - (:union)
-  ;; - (:kleene-closure a)
-  ;; - (:concatenation (:union a b) (:kleene-closure c))
-  (defun regex->nfa (regex)
-    "Convert a regular expression to an NFA."
-    (cond
-     ((null regex) ; Base case for empty set
-                  (make-fa nil (newstate) (list (newstate))))
-     ;; TODO: other base cases
-     (t
-       (TODO 'regex->nfa))))
+;; Regular Expression Lecture: Union
+(defun fa-union (nfa-1 nfa-2)
+  "Find the union of NFA-1 and NFA-2."
+  (assert (not (intersection (finite-automaton-states nfa-1)
+                             (finite-automaton-states nfa-2))))
+  (let ((start (newstate))
+        (accept (newstate)))
+    (make-fa (append (list (list start :epsilon (finite-automaton-start nfa-1)))
+                     (list (list start :epsilon (finite-automaton-start nfa-2)))
+		     (map 'list (lambda (x)
+                                  (list x :epsilon accept))
+                          (finite-automaton-accept nfa-1))
+                     (map 'list (lambda (x)
+                                  (list x :epsilon accept))
+                          (finite-automaton-accept nfa-2))
+                     (finite-automaton-edges nfa-1)
+                     (finite-automaton-edges nfa-2))
+             start
+             (list accept))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;; Part 3: Regular Decision and Closure Properties ;;;
