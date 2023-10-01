@@ -459,7 +459,20 @@
 ;; Regular Expression Lecture: Kleene-Closure
 (defun fa-repeat (nfa)
   "Find the repetition / Kleene-closure of NFA."
-  (TODO 'fa-repeat))
+  (let ((start (newstate))
+	(accept (newstate)))
+    ;; Add new e-transition - new start to old nfa start
+    ;;               - old accept to new accept
+    ;;               - new start to new accept
+    ;;               - old accept to old start
+    (make-fa (append (list (list start :epsilon (finite-automaton-start nfa)))
+		     (list (list start :epsilon accept))
+		     (map 'list (lambda (x) (list x :epsilon start)) (finite-automaton-accept nfa))
+		     (map 'list (lambda (x) (list x :epsilon accept)) (finite-automaton-accept nfa))
+		     (finite-automaton-edges nfa))
+	     start
+	     (list accept))))
+    
 
 ;; Regular Expression Lecture: Union
 (defun fa-union (nfa-1 nfa-2)
