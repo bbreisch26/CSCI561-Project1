@@ -481,6 +481,26 @@
              start
              (list accept))))
 
+  ;; McNaughton-Yamada-Thompson Algorithm Lecture: Algorithm 1
+  ;;
+  ;; Convert a regular expression to a nondeterministic finite
+  ;; automaton.
+  ;;
+  ;; The following are examples of possible regular expressions.
+  ;;
+  ;; - (:concatenation a b c)
+  ;; - (:union a b c :epsilon)
+  ;; - (:union)
+  ;; - (:kleene-closure a)
+  ;; - (:concatenation (:union a b) (:kleene-closure c))
+  (defun regex->nfa (regex)
+    "Convert a regular expression to an NFA."
+    (cond
+     ((null regex) ; Base case for empty set
+                  (make-fa nil (newstate) (list (newstate))))
+     ;; TODO: other base cases
+     (t
+       (TODO 'regex->nfa))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 3: Regular Decision and Closure Properties ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
