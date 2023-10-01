@@ -357,33 +357,30 @@
 
 (defun nfa->dfa (nfa)
   "Convert a nondeterministic finite automaton to a deterministic finite automaton."
-  (let (; (visited-hash (make-symbol-hash-table))
+  (let ((Q-prime (make-symbol-hash-table))
         (alphabet (remove :epsilon (finite-automaton-alphabet nfa))))
     (labels ((sort-subset (u)
                           ;; sort subsets so we can quickly test for previously
                           ;; visited subsets in the hash table
                           (sort u #'state-predicate))
-             (visit-symbol (edges subset-0 input-symbol)
+             (visit-symbol (E-prime subset-0 input-symbol)
                            (let ((u-prime (move-e-closure nfa subset-0 input-symbol)))
                              (if u-prime
-                                 (let ((E-prime (sort-subset (cons (cdr edges) '(subset-0 input-symbol u-prime))))
-                                       (Q-prime (car edges)))
-                                   (visit-subset (cons Q-prime E-prime) u-prime))
-                                 edges)))
-             (visit-subset (edges subset)
-                           (if (member subset (car edges))
-                               edges
-                               (let ((E-prime (cdr edges))
-                                     (Q-prime (sort-subset (cons (car edges) subset))))
-                                 (labels ((h (sigma) (visit-symbol (cons Q-prime E-prime) subset sigma)))
-                                   (fold-left #'h E-prime alphabet)))))
+                                 (let ((E-prime-2 (sort-subset (cons E-prime '(subset-0 input-symbol u-prime)))))
+                                   (visit-subset E-prime-2 u-prime))
+                                 E-prime)))
+             (visit-subset (E-prime subset)
+                           (if (gethash subset Q-prime)
+                               E-prime
+                               (labels ((h (sigma) (visit-symbol E-prime subset sigma)))
+                                 (setf (gethash subset Q-prime) subset)
+                                 (fold-left #'h E-prime alphabet))))
+             (maphash-to-values (k v) (declare (ignore k)) v)
              (remove-non-accept (state)
                                 (null (intersection state (finite-automaton-accept nfa) :test #'equal))))
       (let* ((q-prime-0 (e-closure nfa (finite-automaton-start nfa) nil))
-             (states (visit-subset (cons nil nil) q-prime-0))
-             (Q-prime (car states))
-             (E-prime (cdr states))
-             (F-prime (remove-if-not #'remove-non-accept Q-prime)))
+             (E-prime (visit-subset nil q-prime-0))
+             (F-prime (remove-if-not #'remove-non-accept (maphash #'maphash-to-values Q-prime))))
         (make-fa E-prime q-prime-0 f-prime)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
