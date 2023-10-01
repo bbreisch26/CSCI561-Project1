@@ -313,10 +313,10 @@
 (defun nfa-simulate (nfa sequence)
   "True if NFA accepts SEQUENCE."
   (labels ((edelta (subset list)
-             (if (null list)
-		 subset
-		 (let ((u (move-e-closure nfa subset (car list))))
-		      (edelta u (cdr list))))))
+                   (if (null list)
+                       subset
+                       (let ((u (move-e-closure nfa subset (car list))))
+                         (edelta u (cdr list))))))
     (let* ((q0 (finite-automaton-start nfa))
            (f (finite-automaton-accept nfa))
            (u (e-closure nfa (list q0) nil))
@@ -366,125 +366,124 @@
              (visit-symbol (edges subset-0 input-symbol)
                            (let ((u-prime (move-e-closure nfa subset-0 input-symbol)))
                              (if u-prime
-                                 (let
-                                     ((E-prime (sort-subset (cons (car edges) '(subset-0 input-symbol))))
-                                      (Q-prime (cdr edges)))
+                                 (let ((E-prime (sort-subset (cons (cdr edges) '(subset-0 input-symbol u-prime))))
+                                       (Q-prime (car edges)))
                                    (visit-subset (cons Q-prime E-prime) u-prime))
                                  edges)))
              (visit-subset (edges subset)
                            (if (member subset (car edges))
                                edges
                                (let ((E-prime (cdr edges))
-                                     (Q-prime (union (car edges) subset)))
+                                     (Q-prime (sort-subset (cons (car edges) subset))))
                                  (labels ((h (sigma) (visit-symbol (cons Q-prime E-prime) subset sigma)))
                                    (fold-left #'h E-prime alphabet)))))
              (remove-non-accept (state)
-                               (null (intersection state (finite-automaton-accept nfa) :test #'equal))))
+                                (null (intersection state (finite-automaton-accept nfa) :test #'equal))))
       (let* ((q-prime-0 (e-closure nfa (finite-automaton-start nfa) nil))
              (states (visit-subset (cons nil nil) q-prime-0))
              (Q-prime (car states))
              (E-prime (cdr states))
              (F-prime (remove-if-not #'remove-non-accept Q-prime)))
-             (make-fa E-prime q-prime-0 f-prime)))))
+        (make-fa E-prime q-prime-0 f-prime)))))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;; Part 2: Regular Expressions ;;;
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Part 2: Regular Expressions ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ;; We represent regular expressions as S-expressions, using the
-  ;; following operators:
-  ;;
-  ;; - :union
-  ;; - :concatenation
-  ;; - :kleene-closure
-  ;;
-  ;; The union and concatenation operators are n-ary.  Kleene-closure
-  ;; takes a single argument.
-  ;;
-  ;; We can represent any regular language with a regular expression
-  ;; using only the operators :union, :concatenation, :kleene-closure.
-  ;; However, it is often convenient (and common practice) to define
-  ;; additional operators. The SIMPLIFY-REGEX function will take as
-  ;; input a regular expression with such additional operators and
-  ;; return a simplified expression that contains only the operators
-  ;; :union, :concatenation, ang :kleene-closure.  Specifically, it will
-  ;; simplify the following operators:
-  ;;
-  ;; - :.     -> (:union alphabet...)
-  ;; - (:? X) -> (:union X :epsilon)
-  ;; - (:+ X) -> (:concatenation X (:kleene-closure X))
-
-  (defun simplify-regex (regex &optional alphabet)
-    "Convert :., :?, :+ to only :union, :concatenation, :kleene-closure"
-    (labels ((h (regex)
-                (cond
-                 ((eq regex :.)
-                   (assert alphabet)
-                   `(:union ,@alphabet))
-                 ((atom regex)
-                   regex)
-                 (t (destructuring-bind (operator &rest args) regex
-                      (TODO 'simplify-regex))))))
-      (h regex)))
+;; We represent regular expressions as S-expressions, using the
+;; following operators:
+;;
+;; - :union
+;; - :concatenation
+;; - :kleene-closure
+;;
+;; The union and concatenation operators are n-ary.  Kleene-closure
+;; takes a single argument.
+;;
+;; We can represent any regular language with a regular expression
+;; using only the operators :union, :concatenation, :kleene-closure.
+;; However, it is often convenient (and common practice) to define
+;; additional operators. The SIMPLIFY-REGEX function will take as
+;; input a regular expression with such additional operators and
+;; return a simplified expression that contains only the operators
+;; :union, :concatenation, ang :kleene-closure.  Specifically, it will
+;; simplify the following operators:
+;;
+;; - :.     -> (:union alphabet...)
+;; - (:? X) -> (:union X :epsilon)
+;; - (:+ X) -> (:concatenation X (:kleene-closure X))
 
 (defun simplify-regex (regex &optional alphabet)
   "Convert :., :?, :+ to only :union, :concatenation, :kleene-closure"
   (labels ((h (regex)
-             (cond
+              (cond
                ((eq regex :.)
-                (assert alphabet)
-                `(:union ,@alphabet))
+                 (assert alphabet)
+                 `(:union ,@alphabet))
                ((atom regex)
-                regex)
+                 regex)
                (t (destructuring-bind (operator &rest args) regex
-		    (case operator
-		      (:.
-		       (if alphabet
-			   `(:union ,@alphabet)
-			   '(:union :epsilon)))
-		      (:?
-		       (if (null args)
-			   `(:union ,@alphabet :epsilon)
-		           `(:union ,@(mapcar #'h args) :epsilon)))
-		      (:+
-		       (if (null args)
-			   `(:concatenation ,@alphabet (:kleene-closure ,@alphabet))
-			   `(:concatenation ,@(mapcar #'h args) (:kleene-closure ,@(mapcar #'h args)))))     
-		      (t
-		       (cons operator(mapcar #'h args)))))))))
+                    (TODO 'simplify-regex))))))
     (h regex)))
 
-  ;; Regular Expression Lecture: Concatenation.
-  ;; Provided in complete form as an example
-  (defun fa-concatenate (nfa-1 nfa-2)
-    "Find the concatenation of NFA-1 and NFA-2."
-    (assert (not (intersection (finite-automaton-states nfa-1)
-                               (finite-automaton-states nfa-2))))
-    (let ((start (newstate))
-          (accept (newstate)))
-      (make-fa (append (list (list start :epsilon (finite-automaton-start nfa-1)))
-                 (map 'list (lambda (x)
-                              (list x :epsilon (finite-automaton-start nfa-2)))
-                   (finite-automaton-accept nfa-1))
-                 (map 'list (lambda (x)
-                              (list x :epsilon accept))
-                   (finite-automaton-accept nfa-2))
-                 (finite-automaton-edges nfa-1)
-                 (finite-automaton-edges nfa-2))
-               start
-               (list accept))))
+(defun simplify-regex (regex &optional alphabet)
+  "Convert :., :?, :+ to only :union, :concatenation, :kleene-closure"
+  (labels ((h (regex)
+              (cond
+               ((eq regex :.)
+                 (assert alphabet)
+                 `(:union ,@alphabet))
+               ((atom regex)
+                 regex)
+               (t (destructuring-bind (operator &rest args) regex
+                    (case operator
+                      (:.
+                       (if alphabet
+                           `(:union ,@alphabet)
+                           '(:union :epsilon)))
+                      (:?
+                       (if (null args)
+                           `(:union ,@alphabet :epsilon)
+                           `(:union ,@(mapcar #'h args) :epsilon)))
+                      (:+
+                       (if (null args)
+                           `(:concatenation ,@alphabet (:kleene-closure ,@alphabet))
+                           `(:concatenation ,@(mapcar #'h args) (:kleene-closure ,@(mapcar #'h args)))))
+                      (t
+                       (cons operator (mapcar #'h args)))))))))
+    (h regex)))
 
-  ;; Regular Expression Lecture: Union
-  (defun fa-union (nfa-1 nfa-2)
-    "Find the union of NFA-1 and NFA-2."
-    (assert (not (intersection (finite-automaton-states nfa-1)
-                               (finite-automaton-states nfa-2))))
-    (TODO 'fa-union))
+;; Regular Expression Lecture: Concatenation.
+;; Provided in complete form as an example
+(defun fa-concatenate (nfa-1 nfa-2)
+  "Find the concatenation of NFA-1 and NFA-2."
+  (assert (not (intersection (finite-automaton-states nfa-1)
+                             (finite-automaton-states nfa-2))))
+  (let ((start (newstate))
+        (accept (newstate)))
+    (make-fa (append (list (list start :epsilon (finite-automaton-start nfa-1)))
+               (map 'list (lambda (x)
+                            (list x :epsilon (finite-automaton-start nfa-2)))
+                 (finite-automaton-accept nfa-1))
+               (map 'list (lambda (x)
+                            (list x :epsilon accept))
+                 (finite-automaton-accept nfa-2))
+               (finite-automaton-edges nfa-1)
+               (finite-automaton-edges nfa-2))
+             start
+             (list accept))))
 
-  ;; Regular Expression Lecture: Kleene-Closure
-  (defun fa-repeat (nfa)
-    "Find the repetition / Kleene-closure of NFA."
-    (TODO 'fa-repeat))
+;; Regular Expression Lecture: Union
+(defun fa-union (nfa-1 nfa-2)
+  "Find the union of NFA-1 and NFA-2."
+  (assert (not (intersection (finite-automaton-states nfa-1)
+                             (finite-automaton-states nfa-2))))
+  (TODO 'fa-union))
+
+;; Regular Expression Lecture: Kleene-Closure
+(defun fa-repeat (nfa)
+  "Find the repetition / Kleene-closure of NFA."
+  (TODO 'fa-repeat))
 
 ;; Regular Expression Lecture: Union
 (defun fa-union (nfa-1 nfa-2)
@@ -494,38 +493,38 @@
   (let ((start (newstate))
         (accept (newstate)))
     (make-fa (append (list (list start :epsilon (finite-automaton-start nfa-1)))
-                     (list (list start :epsilon (finite-automaton-start nfa-2)))
-		     (map 'list (lambda (x)
-                                  (list x :epsilon accept))
-                          (finite-automaton-accept nfa-1))
-                     (map 'list (lambda (x)
-                                  (list x :epsilon accept))
-                          (finite-automaton-accept nfa-2))
-                     (finite-automaton-edges nfa-1)
-                     (finite-automaton-edges nfa-2))
+               (list (list start :epsilon (finite-automaton-start nfa-2)))
+               (map 'list (lambda (x)
+                            (list x :epsilon accept))
+                 (finite-automaton-accept nfa-1))
+               (map 'list (lambda (x)
+                            (list x :epsilon accept))
+                 (finite-automaton-accept nfa-2))
+               (finite-automaton-edges nfa-1)
+               (finite-automaton-edges nfa-2))
              start
              (list accept))))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;; Part 3: Regular Decision and Closure Properties ;;;
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Part 3: Regular Decision and Closure Properties ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ;; Lecture: Decision Properties of Regular Languages, Emptiness
-  (defun fa-empty (fa)
-    "Does FA represent the empty set?"
-    (TODO 'fa-empty))
+;; Lecture: Decision Properties of Regular Languages, Emptiness
+(defun fa-empty (fa)
+  "Does FA represent the empty set?"
+  (TODO 'fa-empty))
 
-  ;; Lecture: Closure Properties of Regular Languages, State Minimization
-  (defun dfa-minimize (dfa)
-    "Return an equivalent DFA with minimum state."
-    (TODO 'dfa-minimize))
+;; Lecture: Closure Properties of Regular Languages, State Minimization
+(defun dfa-minimize (dfa)
+  "Return an equivalent DFA with minimum state."
+  (TODO 'dfa-minimize))
 
-  ;; Lecture: Closure Properties of Regular Languages, Intersection
-  (defun dfa-intersection (dfa-0 dfa-1)
-    "Return the intersection FA."
-    (TODO 'dfa-intersection))
+;; Lecture: Closure Properties of Regular Languages, Intersection
+(defun dfa-intersection (dfa-0 dfa-1)
+  "Return the intersection FA."
+  (TODO 'dfa-intersection))
 
-  ;; Lecture: Decision Properties of Regular Languages, Equivalence
-  (defun dfa-equivalent (dfa-0 dfa-1)
-    "Do DFA-1 and DFA-2 recognize the same language?"
-    (TODO 'dfa-equivalent))
+;; Lecture: Decision Properties of Regular Languages, Equivalence
+(defun dfa-equivalent (dfa-0 dfa-1)
+  "Do DFA-1 and DFA-2 recognize the same language?"
+  (TODO 'dfa-equivalent))
