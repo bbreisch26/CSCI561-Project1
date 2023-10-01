@@ -7,3 +7,4 @@
 *.fasl
 /auto
 *.synctex.gz
+.vscode
