@@ -409,20 +409,6 @@
 ;; - :.     -> (:union alphabet...)
 ;; - (:? X) -> (:union X :epsilon)
 ;; - (:+ X) -> (:concatenation X (:kleene-closure X))
-
-(defun simplify-regex (regex &optional alphabet)
-  "Convert :., :?, :+ to only :union, :concatenation, :kleene-closure"
-  (labels ((h (regex)
-              (cond
-               ((eq regex :.)
-                 (assert alphabet)
-                 `(:union ,@alphabet))
-               ((atom regex)
-                 regex)
-               (t (destructuring-bind (operator &rest args) regex
-                    (TODO 'simplify-regex))))))
-    (h regex)))
-
 (defun simplify-regex (regex &optional alphabet)
   "Convert :., :?, :+ to only :union, :concatenation, :kleene-closure"
   (labels ((h (regex)
@@ -469,13 +455,6 @@
                (finite-automaton-edges nfa-2))
              start
              (list accept))))
-
-;; Regular Expression Lecture: Union
-(defun fa-union (nfa-1 nfa-2)
-  "Find the union of NFA-1 and NFA-2."
-  (assert (not (intersection (finite-automaton-states nfa-1)
-                             (finite-automaton-states nfa-2))))
-  (TODO 'fa-union))
 
 ;; Regular Expression Lecture: Kleene-Closure
 (defun fa-repeat (nfa)
