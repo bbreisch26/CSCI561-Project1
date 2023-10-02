@@ -375,7 +375,9 @@
                                (labels ((h (sigma) (visit-symbol E-prime subset sigma)))
                                  (setf (gethash subset Q-prime) subset)
                                  (fold-left #'h E-prime alphabet))))
+            ;  Used to aid in getting a list of values in the hashmap, in compination with maphash
              (maphash-to-values (k v) (declare (ignore k)) v)
+            ;  Used in fold-left with the filter (remove-if-not) function to remove states with no accept
              (remove-non-accept (state)
                                 (null (intersection state (finite-automaton-accept nfa) :test #'equal))))
       (let* ((q-prime-0 (e-closure nfa (finite-automaton-start nfa) nil))
