@@ -357,33 +357,34 @@
 
 (defun nfa->dfa (nfa)
   "Convert a nondeterministic finite automaton to a deterministic finite automaton."
-  (let ((Q-prime (make-symbol-hash-table))
+  (let ((visited-subsets (make-symbol-hash-table))
         (alphabet (remove :epsilon (finite-automaton-alphabet nfa))))
     (labels ((sort-subset (u)
                           ;; sort subsets so we can quickly test for previously
                           ;; visited subsets in the hash table
                           (sort u #'state-predicate))
-             (visit-symbol (E-prime subset-0 input-symbol)
-                           (let ((u-prime (move-e-closure nfa subset-0 input-symbol)))
-                             (if u-prime
-                                 (let ((E-prime-2 (sort-subset (cons E-prime '(subset-0 input-symbol u-prime)))))
-                                   (visit-subset E-prime-2 u-prime))
-                                 E-prime)))
-             (visit-subset (E-prime subset)
-                           (if (gethash subset Q-prime)
-                               E-prime
-                               (labels ((h (E-prime-inner sigma) (visit-symbol E-prime-inner subset sigma)))
-                                 (setf (gethash subset Q-prime) subset)
-                                 (fold-left #'h E-prime alphabet))))
+             (visit-symbol (edges starting-subset input-symbol)
+                           (let ((new-subset (move-e-closure nfa starting-subset input-symbol)))
+                             (if new-subset
+                                 (let* ((new-edge `(,starting-subset ,input-symbol ,new-subset))
+                                        (updated-edges (sort-subset (cons new-edge edges))))
+                                   (visit-subset updated-edges new-subset))
+                                 edges)))
+             (visit-subset (edges subset)
+                           (if (gethash subset visited-subsets)
+                               edges
+                               (labels ((update-edges (edges-state sigma) (visit-symbol edges-state subset sigma)))
+                                 (setf (gethash subset visited-subsets) subset)
+                                 (fold-left #'update-edges edges alphabet))))
             ;  Used to aid in getting a list of values in the hashmap, in compination with maphash
              (maphash-to-values (k v) (declare (ignore k)) v)
             ;  Used in fold-left with the filter (remove-if-not) function to remove states with no accept
              (remove-non-accept (state)
                                 (null (intersection state (finite-automaton-accept nfa) :test #'equal))))
-      (let* ((q-prime-0 (e-closure nfa (list (finite-automaton-start nfa)) nil))
-             (E-prime (visit-subset nil q-prime-0))
-             (F-prime (remove-if-not #'remove-non-accept (maphash #'maphash-to-values Q-prime))))
-        (make-fa E-prime q-prime-0 F-prime)
+      (let* ((starting-subset (e-closure nfa (list (finite-automaton-start nfa)) nil))
+             (edges (visit-subset nil starting-subset))
+             (accept-subsets (remove-if-not #'remove-non-accept (maphash #'maphash-to-values visited-subsets))))
+        (make-fa edges starting-subset accept-subsets)
              ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
