@@ -372,7 +372,7 @@
              (visit-subset (E-prime subset)
                            (if (gethash subset Q-prime)
                                E-prime
-                               (labels ((h (sigma) (visit-symbol E-prime subset sigma)))
+                               (labels ((h (E-prime-inner sigma) (visit-symbol E-prime-inner subset sigma)))
                                  (setf (gethash subset Q-prime) subset)
                                  (fold-left #'h E-prime alphabet))))
             ;  Used to aid in getting a list of values in the hashmap, in compination with maphash
@@ -380,10 +380,11 @@
             ;  Used in fold-left with the filter (remove-if-not) function to remove states with no accept
              (remove-non-accept (state)
                                 (null (intersection state (finite-automaton-accept nfa) :test #'equal))))
-      (let* ((q-prime-0 (e-closure nfa (finite-automaton-start nfa) nil))
+      (let* ((q-prime-0 (e-closure nfa (list (finite-automaton-start nfa)) nil))
              (E-prime (visit-subset nil q-prime-0))
              (F-prime (remove-if-not #'remove-non-accept (maphash #'maphash-to-values Q-prime))))
-        (make-fa E-prime q-prime-0 f-prime)))))
+        (make-fa E-prime q-prime-0 F-prime)
+             ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 2: Regular Expressions ;;;
