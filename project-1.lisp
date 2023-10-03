@@ -71,13 +71,13 @@
                                 (make-symbol-hash-table)
                                 edges)))
       (make-finite-automaton
-       :states (hash-table-keys state-hash)
-       :alphabet (hash-table-keys alphabet-hash)
-       :edges edges
-       :delta (lambda (state-0 input-symbol)
-                (gethash (cons state-0 input-symbol) edge-hash))
-       :start start
-       :accept accept))))
+        :states (hash-table-keys state-hash)
+        :alphabet (hash-table-keys alphabet-hash)
+        :edges edges
+        :delta (lambda (state-0 input-symbol)
+                 (gethash (cons state-0 input-symbol) edge-hash))
+        :start start
+        :accept accept))))
 
 
 ;;; Higher-order conveience functions for Finite Automata ;;;
@@ -547,6 +547,13 @@
 ;;; Part 3: Regular Decision and Closure Properties ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun states-cartesian (states-0 states-1)
+  (labels ((outer-helper (outer-prod-list state-0)
+                         (labels ((inner-helper (prod-list state-1)
+                                                (cons (list state-0 state-1) prod-list)))
+                           (fold-left #'inner-helper outer-prod-list (finite-automaton-accept states-1)))))
+    (fold-left #'outer-helper (list) (finite-automaton-accept states-0))))
+
 (defun dfa-cartesian-edges (dfa-0 dfa-1)
   (labels ((outer-helper (outer-edges dfa-0-edge)
                          ; Deconstruct the edge in dfa-0
@@ -580,7 +587,7 @@
   (TODO 'dfa-minimize))
 
 ;; Lecture: Closure Properties of Regular Languages, Intersection
-(defun dfa-intersection (dfa-0 dfa-1) 
+(defun dfa-intersection (dfa-0 dfa-1)
   (labels ((outer-helper (outer-accepts dfa-0-accept)
                          (labels ((inner-helper (inner-accepts dfa-1-accept)
                                                 (cons (list dfa-0-accept dfa-1-accept) inner-accepts)))
@@ -592,5 +599,12 @@
 
 ;; Lecture: Decision Properties of Regular Languages, Equivalence
 (defun dfa-equivalent (dfa-0 dfa-1)
-  "Do DFA-1 and DFA-2 recognize the same language?"
-  (TODO 'dfa-equivalent))
+  (let* ((dfa-0-accept (finite-automaton-accept dfa-0))
+         (dfa-0-no-accept (set-difference (finite-automaton-states dfa-0) dfa-0-accept))
+         (dfa-1-accept (finite-automaton-accept dfa-1))
+         (dfa-1-no-accept (set-difference (finite-automaton-states dfa-1) dfa-1-accept))
+         (accept (union (states-cartesian dfa-0-accept dfa-1-no-accept) (states-cartesian dfa-1-accept dfa-0-no-accept)))
+         (start (list (finite-automaton-start dfa-0) (finite-automaton-start dfa-1)))
+         (edges (dfa-cartesian-edges dfa-0 dfa-1))
+         (new-dfa (make-fa edges start accept)))
+    (not (fa-empty new-dfa))))
