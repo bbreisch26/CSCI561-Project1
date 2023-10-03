@@ -376,16 +376,15 @@
                                (labels ((update-edges (edges-state sigma) (visit-symbol edges-state subset sigma)))
                                  (setf (gethash subset visited-subsets) subset)
                                  (fold-left #'update-edges edges alphabet))))
-            ;  Used to aid in getting a list of values in the hashmap, in compination with maphash
+             ;  Used to aid in getting a list of values in the hashmap, in compination with maphash
              (maphash-to-values (k v) (declare (ignore k)) v)
-            ;  Used in fold-left with the filter (remove-if-not) function to remove states with no accept
+             ;  Used in fold-left with the filter (remove-if-not) function to remove states with no accept
              (remove-non-accept (state)
                                 (null (intersection state (finite-automaton-accept nfa) :test #'equal))))
       (let* ((starting-subset (e-closure nfa (list (finite-automaton-start nfa)) nil))
              (edges (visit-subset nil starting-subset))
              (accept-subsets (remove-if-not #'remove-non-accept (maphash #'maphash-to-values visited-subsets))))
-        (make-fa edges starting-subset accept-subsets)
-             ))))
+        (make-fa edges starting-subset accept-subsets)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 2: Regular Expressions ;;;
@@ -464,19 +463,19 @@
 (defun fa-repeat (nfa)
   "Find the repetition / Kleene-closure of NFA."
   (let ((start (newstate))
-	(accept (newstate)))
+        (accept (newstate)))
     ;; Add new e-transition - new start to old nfa start
     ;;               - old accept to new accept
     ;;               - new start to new accept
     ;;               - old accept to old start
     (make-fa (append (list (list start :epsilon (finite-automaton-start nfa)))
-		     (list (list start :epsilon accept))
-		     (map 'list (lambda (x) (list x :epsilon start)) (finite-automaton-accept nfa))
-		     (map 'list (lambda (x) (list x :epsilon accept)) (finite-automaton-accept nfa))
-		     (finite-automaton-edges nfa))
-	     start
-	     (list accept))))
-    
+               (list (list start :epsilon accept))
+               (map 'list (lambda (x) (list x :epsilon start)) (finite-automaton-accept nfa))
+               (map 'list (lambda (x) (list x :epsilon accept)) (finite-automaton-accept nfa))
+               (finite-automaton-edges nfa))
+             start
+             (list accept))))
+
 
 ;; Regular Expression Lecture: Union
 (defun fa-union (nfa-1 nfa-2)
@@ -506,48 +505,69 @@
 
 (defun MYT-concatenate (regex)
   (labels ((conc (m r)
-	     (fa-concatenate m (regex->nfa r))))
+                 (fa-concatenate m (regex->nfa r))))
     (if (null regex)
-	(MYT-base :epsilon)
-	(fold-left #'conc (regex->nfa (car regex)) (cdr regex)))))
+        (MYT-base :epsilon)
+        (fold-left #'conc (regex->nfa (car regex)) (cdr regex)))))
 
 (defun MYT-union (regex)
   (labels ((uni (m r)
-	     (fa-union m (regex->nfa r))))
+                (fa-union m (regex->nfa r))))
     (if (null regex)
-	(MYT-base regex)
-	(fold-left #'uni (regex->nfa (car regex)) (cdr regex)))))
-  ;; McNaughton-Yamada-Thompson Algorithm Lecture: Algorithm 1
-  ;;
-  ;; Convert a regular expression to a nondeterministic finite
-  ;; automaton.
-  ;;
-  ;; The following are examples of possible regular expressions.
-  ;;
-  ;; - (:concatenation a b c)
-  ;; - (:union a b c :epsilon)
-  ;; - (:union)
-  ;; - (:kleene-closure a)
-  ;; - (:concatenation (:union a b) (:kleene-closure c))
+        (MYT-base regex)
+        (fold-left #'uni (regex->nfa (car regex)) (cdr regex)))))
+;; McNaughton-Yamada-Thompson Algorithm Lecture: Algorithm 1
+;;
+;; Convert a regular expression to a nondeterministic finite
+;; automaton.
+;;
+;; The following are examples of possible regular expressions.
+;;
+;; - (:concatenation a b c)
+;; - (:union a b c :epsilon)
+;; - (:union)
+;; - (:kleene-closure a)
+;; - (:concatenation (:union a b) (:kleene-closure c))
 (defun regex->nfa (regex)
   "Convert a regular expression to an NFA."
   (cond
-    ((null regex)
+   ((null regex)
      (make-fa nil (newstate) (list (newstate))))
-    ((atom regex) ; Base case for empty set, empty string
-     (MYT-base regex))
-    ((eq (car regex) :kleene-closure)
+   ((atom regex) ; Base case for empty set, empty string
+                (MYT-base regex))
+   ((eq (car regex) :kleene-closure)
      (fa-repeat (regex->nfa (first (rest regex)))))
-    ((eq (car regex) :concatenation)
+   ((eq (car regex) :concatenation)
      (MYT-concatenate (cdr regex)))
-    ((eq (car regex) :union)
+   ((eq (car regex) :union)
      (MYT-union (cdr regex)))
-     ;;Single symbol or empty set
-    (t nil))
-  )
+   ;;Single symbol or empty set
+   (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 3: Regular Decision and Closure Properties ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun dfa-cartesian-edges (dfa-0 dfa-1)
+  (labels ((outer-helper (outer-edges dfa-0-edge)
+                         ; Deconstruct the edge in dfa-0
+                         (let ((edge-0-src (nth 0 dfa-0-edge))
+                               (edge-0-dst (nth 2 dfa-0-edge))
+                               (edge-0-tra (nth 1 dfa-0-edge)))
+                           (labels ((inner-helper (inner-edges dfa-1-edge)
+                                                  ; Deconstruct the edge in dfa-1
+                                                  (let ((edge-1-src (nth 0 dfa-1-edge))
+                                                        (edge-1-dst (nth 2 dfa-1-edge))
+                                                        (edge-1-tra (nth 1 dfa-0-edge)))
+                                                    ; Check if new edge is valid
+                                                    (if (equal edge-0-tra edge-1-tra)
+                                                        ; If the edges match, add a new edge to the cartesian
+                                                        (let ((new-src (list edge-0-src edge-1-src))
+                                                              (new-dst (list edge-0-dst edge-1-dst)))
+                                                          (cons (list new-src edge-0-tra new-dst) inner-edges))
+                                                        ; If the edges do not match, do not add a new edge to the cartesian
+                                                        inner-edges))))
+                             (fold-left #'inner-helper outer-edges (finite-automaton-edges dfa-1))))))
+    (fold-left #'outer-helper (list) (finite-automaton-edges dfa-0))))
 
 ;; Lecture: Decision Properties of Regular Languages, Emptiness
 (defun fa-empty (fa)
