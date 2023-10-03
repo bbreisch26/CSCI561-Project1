@@ -547,13 +547,15 @@
 ;;; Part 3: Regular Decision and Closure Properties ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; Used in intersection and equivalent - finds cartesian product of a list of states (useful for finding accept states)
 (defun states-cartesian (states-0 states-1)
   (labels ((outer-helper (outer-prod-list state-0)
                          (labels ((inner-helper (prod-list state-1)
                                                 (cons (list state-0 state-1) prod-list)))
-                           (fold-left #'inner-helper outer-prod-list (finite-automaton-accept states-1)))))
-    (fold-left #'outer-helper (list) (finite-automaton-accept states-0))))
+                           (fold-left #'inner-helper outer-prod-list states-1))))
+    (fold-left #'outer-helper (list) states-0)))
 
+; Used in intersection and equivalent - finds cartesian product of edges (useful for constructing DFAS)
 (defun dfa-cartesian-edges (dfa-0 dfa-1)
   (labels ((outer-helper (outer-edges dfa-0-edge)
                          ; Deconstruct the edge in dfa-0
@@ -588,14 +590,10 @@
 
 ;; Lecture: Closure Properties of Regular Languages, Intersection
 (defun dfa-intersection (dfa-0 dfa-1)
-  (labels ((outer-helper (outer-accepts dfa-0-accept)
-                         (labels ((inner-helper (inner-accepts dfa-1-accept)
-                                                (cons (list dfa-0-accept dfa-1-accept) inner-accepts)))
-                           (fold-left #'inner-helper outer-accepts (finite-automaton-accept dfa-1)))))
-    (let ((accept (fold-left #'outer-helper (list) (finite-automaton-accept dfa-0)))
-          (start (list (finite-automaton-start dfa-0) (finite-automaton-start dfa-1)))
-          (edges (dfa-cartesian-edges dfa-0 dfa-1)))
-      (make-fa edges start accept))))
+  (let ((accept (states-cartesian (finite-automaton-accept dfa-0) (finite-automaton-accept dfa-1)))
+        (start (list (finite-automaton-start dfa-0) (finite-automaton-start dfa-1)))
+        (edges (dfa-cartesian-edges dfa-0 dfa-1)))
+    (make-fa edges start accept)))
 
 ;; Lecture: Decision Properties of Regular Languages, Equivalence
 (defun dfa-equivalent (dfa-0 dfa-1)
