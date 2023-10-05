@@ -30,33 +30,33 @@
 ;; A structure type for finite automata
 (defstruct finite-automaton
   "A Finite Automaton."
-  states    ; state set as a list
-  alphabet  ; input alphabet as a list
-  edges     ; list of edges: (state-0 input-symbol state-1)
-  delta     ; transition function : state-0 * input-symbol -> state-1
-  start     ; start state
-  accept)   ; accept set as a list
+  states ; state set as a list
+  alphabet ; input alphabet as a list
+  edges ; list of edges: (state-0 input-symbol state-1)
+  delta ; transition function : state-0 * input-symbol -> state-1
+  start ; start state
+  accept) ; accept set as a list
 
 (defun make-fa (edges start accept)
   "Convenience constructor for finite automata"
   (flet ((add-state (hash state)
-           (setf (gethash state hash) t)
-           hash)
+                    (setf (gethash state hash) t)
+                    hash)
          (add-edge-states (hash edge)
-           (destructuring-bind (state-0 input-symbol state-1) edge
-             (declare (ignore input-symbol))
-             (setf (gethash state-0 hash) t
-                   (gethash state-1 hash) t))
-           hash)
+                          (destructuring-bind (state-0 input-symbol state-1) edge
+                            (declare (ignore input-symbol))
+                            (setf (gethash state-0 hash) t
+                              (gethash state-1 hash) t))
+                          hash)
          (add-edge-input-symbol (hash edge)
-           (destructuring-bind (state-0 input-symbol state-1) edge
-             (declare (ignore state-0 state-1))
-             (setf (gethash input-symbol hash) t))
-           hash)
+                                (destructuring-bind (state-0 input-symbol state-1) edge
+                                  (declare (ignore state-0 state-1))
+                                  (setf (gethash input-symbol hash) t))
+                                hash)
          (add-edge-transition (hash edge)
-           (destructuring-bind (state-0 input-symbol state-1) edge
-             (push state-1 (gethash (cons state-0 input-symbol) hash)))
-           hash))
+                              (destructuring-bind (state-0 input-symbol state-1) edge
+                                (push state-1 (gethash (cons state-0 input-symbol) hash)))
+                              hash))
     (let ((state-hash (fold-left #'add-edge-states
                                  (fold-left #'add-state
                                             (add-state (make-symbol-hash-table)
@@ -71,13 +71,13 @@
                                 (make-symbol-hash-table)
                                 edges)))
       (make-finite-automaton
-       :states (hash-table-keys state-hash)
-       :alphabet (hash-table-keys alphabet-hash)
-       :edges edges
-       :delta (lambda (state-0 input-symbol)
-                (gethash (cons state-0 input-symbol) edge-hash))
-       :start start
-       :accept accept))))
+        :states (hash-table-keys state-hash)
+        :alphabet (hash-table-keys alphabet-hash)
+        :edges edges
+        :delta (lambda (state-0 input-symbol)
+                 (gethash (cons state-0 input-symbol) edge-hash))
+        :start start
+        :accept accept))))
 
 
 ;;; Higher-order conveience functions for Finite Automata ;;;
@@ -101,10 +101,10 @@
 (defun map-fa-edges (function fa)
   "Map FUNCTION over the FA's edges."
   (map 'list
-       (lambda (edge)
-         (destructuring-bind (state-0 input-symbol state-1) edge
-           (funcall function state-0 input-symbol state-1)))
-       (finite-automaton-edges fa)))
+      (lambda (edge)
+        (destructuring-bind (state-0 input-symbol state-1) edge
+          (funcall function state-0 input-symbol state-1)))
+    (finite-automaton-edges fa)))
 
 ;;; Graphviz Output ;;;
 
@@ -118,77 +118,76 @@
                     0 fa)
     ;; Output the Graphviz dot file
     (labels ((state-number (state)
-               (gethash state hash))
+                           (gethash state hash))
              (dot-symbol (thing) ; Pretty-print Greek letters
-               (case thing
-                 (:alpha "&alpha;")
-                 (:beta "&beta;")
-                 (:gamma "&gamma;")
-                 (:delta "&delta;")
-                 (:epsilon "&epsilon;")
-                 (:zeta "&zeta;")
-                 (:eta "&eta;")
-                 (:theta "&theta;")
-                 (:iota "&iota;")
-                 (:kappa "&kappa;")
-                 (:lambda "&lambda;")
-                 (:mu "&mu;")
-                 (:nu "&nu;")
-                 (:xi "&xi;")
-                 (:omicron "&omicron;")
-                 (:pi "&pi;")
-                 (:rho "&rho;")
-                 (:sigma "&sigma;")
-                 (:tau "&tau;")
-                 (:upsilon "&upsilon;")
-                 (:phi "&phi;")
-                 (:chi "&chi;")
-                 (:omega "&omega;")
-                 (t thing)))
+                         (case thing
+                           (:alpha "&alpha;")
+                           (:beta "&beta;")
+                           (:gamma "&gamma;")
+                           (:delta "&delta;")
+                           (:epsilon "&epsilon;")
+                           (:zeta "&zeta;")
+                           (:eta "&eta;")
+                           (:theta "&theta;")
+                           (:iota "&iota;")
+                           (:kappa "&kappa;")
+                           (:lambda "&lambda;")
+                           (:mu "&mu;")
+                           (:nu "&nu;")
+                           (:xi "&xi;")
+                           (:omicron "&omicron;")
+                           (:pi "&pi;")
+                           (:rho "&rho;")
+                           (:sigma "&sigma;")
+                           (:tau "&tau;")
+                           (:upsilon "&upsilon;")
+                           (:phi "&phi;")
+                           (:chi "&chi;")
+                           (:omega "&omega;")
+                           (t thing)))
              (helper (stream)
-               ;; output
-               (format stream "~&digraph { ~%")
-               ;; state labels
-               (format stream "~:{~&  ~A[label=\"~A\"];~}"
+                     ;; output
+                     (format stream "~&digraph { ~%")
+                     ;; state labels
+                     (format stream "~:{~&  ~A[label=\"~A\"];~}"
                        (map-fa-states (lambda (state)
                                         (list (state-number state)
                                               state))
                                       fa))
-               ;; start state
-               (format stream "~&  start[shape=none];")
-               (format stream "~&  start -> ~A;"
+                     ;; start state
+                     (format stream "~&  start[shape=none];")
+                     (format stream "~&  start -> ~A;"
                        (state-number (finite-automaton-start fa)))
-               ;; accept state
-               (format stream "~:{~&  ~A [ shape=~A ];~}"
+                     ;; accept state
+                     (format stream "~:{~&  ~A [ shape=~A ];~}"
                        (map-fa-accept (lambda (q)
                                         (list (state-number q) "doublecircle"))
                                       fa))
-               ;; edges
-               (format stream "~:{~&  ~A -> ~A [fontsize=~D,label=\"~A\"];~%~}"
+                     ;; edges
+                     (format stream "~:{~&  ~A -> ~A [fontsize=~D,label=\"~A\"];~%~}"
                        (map-fa-edges (lambda (state-0 input-symbol state-1)
                                        (list (state-number state-0)
                                              (state-number state-1)
                                              12 (dot-symbol input-symbol)))
                                      fa))
-               ;; end
-               (format stream "~&}~%")))
+                     ;; end
+                     (format stream "~&}~%")))
       (cond
-        ((streamp place)
+       ((streamp place)
          (helper place))
-        ((eq place t)
+       ((eq place t)
          (helper *standard-output*))
-        ((null place)
+       ((null place)
          (with-output-to-string (s)
            (helper s)))
-        ((or (stringp place)
-             (pathnamep place))
+       ((or (stringp place)
+            (pathnamep place))
          (with-open-file (stream place
                                  :direction :output
                                  :if-exists :supersede
                                  :if-does-not-exist :create)
-         (helper stream)))
-        (t (error "Unrecognized output type: ~A" place))))))
-
+           (helper stream)))
+       (t (error "Unrecognized output type: ~A" place))))))
 
 
 #+sbcl
@@ -207,7 +206,7 @@
 (defun fa-transition (fa state-0 input-symbol)
   "Return the list of successors of STATE-0 on INPUT-SYMBOL."
   (funcall (finite-automaton-delta fa)
-           state-0 input-symbol))
+    state-0 input-symbol))
 
 (defun dfa-transition (fa state-0 input-symbol)
   "Return the successor of STATE-0 on INPUT-SYMBOL."
@@ -226,18 +225,18 @@
 (defun dfa-p (fa)
   "Is FA is deterministic?"
   (labels ((rec (hash edges)
-             ;; Recurse over the edges and check for nondeterministic
-             ;; transitions.
-             ;; hash : (CONS state-0  input-symbol) -> (or T NIL)
-             (if edges
-                 (destructuring-bind ((state-0 input-symbol state-1) &rest edges) edges
-                   (declare (ignore state-1))
-                   (let ((key (list state-0 input-symbol)))
-                     (unless (or (eq input-symbol :epsilon)
-                                 (gethash key hash))
-                       (setf (gethash key hash) t)
-                       (rec hash edges))))
-                 t)))
+                ;; Recurse over the edges and check for nondeterministic
+                ;; transitions.
+                ;; hash : (CONS state-0  input-symbol) -> (or T NIL)
+                (if edges
+                    (destructuring-bind ((state-0 input-symbol state-1) &rest edges) edges
+                      (declare (ignore state-1))
+                      (let ((key (list state-0 input-symbol)))
+                        (unless (or (eq input-symbol :epsilon)
+                                    (gethash key hash))
+                          (setf (gethash key hash) t)
+                          (rec hash edges))))
+                    t)))
     (and (finite-automaton-p fa)
          (rec (make-symbol-hash-table)
               (finite-automaton-edges fa)))))
@@ -262,9 +261,9 @@
                             (finite-automaton-edges dfa)
                             alphabet)))
       ;; Result
-      (make-fa  edges
-                (finite-automaton-start dfa)
-                (finite-automaton-accept dfa)))))
+      (make-fa edges
+               (finite-automaton-start dfa)
+               (finite-automaton-accept dfa)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; COMPLETE THE FUNCTIONS BELOW ;;;;
@@ -280,9 +279,9 @@
   "True if DFA accepts SEQUENCE."
   (assert (dfa-p dfa))
   (labels ((edelta (state list)
-             (if (null list)
-		 state
-		(edelta (dfa-transition dfa state (car list)) (cdr list)))))
+                   (if (null list)
+                       state
+                       (edelta (dfa-transition dfa state (car list)) (cdr list)))))
     (let ((final-state (edelta (finite-automaton-start dfa)
                                (coerce sequence 'list)))) ; Coerce to list for simplicity
       (if (find final-state (finite-automaton-accept dfa) :test #'equal)
@@ -297,29 +296,27 @@
 ;; Subset Construction Lecture: Algorithm 1
 (defun e-closure (nfa s c)
   (labels ((visit (c q)
-             (if (member q c)
-		 c
-		 ;;Need delta(Q,eps), {q} union C
-		 (e-closure nfa (fa-transition nfa q :epsilon) (union (list q) c))
-	     )))
-	   (fold-left #'visit c s)))
-
+                  (if (member q c)
+                      c
+                      ;;Need delta(Q,eps), {q} union C
+                      (e-closure nfa (fa-transition nfa q :epsilon) (union (list q) c)))))
+    (fold-left #'visit c s)))
 
 
 ;; Subset Construction Lecture: Algorithm 2
 (defun move-e-closure (nfa s a)
   (labels ((visit (c q)
-             (e-closure nfa (fa-transition nfa q a) c )))
+                  (e-closure nfa (fa-transition nfa q a) c)))
     (fold-left #'visit nil (e-closure nfa s nil))))
 
 ;; Subset Construction Lecture: Algorithm 4
 (defun nfa-simulate (nfa sequence)
   "True if NFA accepts SEQUENCE."
   (labels ((edelta (subset list)
-             (if (null list)
-		 subset
-		 (let ((u (move-e-closure nfa subset (car list))))
-		      (edelta u (cdr list))))))
+                   (if (null list)
+                       subset
+                       (let ((u (move-e-closure nfa subset (car list))))
+                         (edelta u (cdr list))))))
     (let* ((q0 (finite-automaton-start nfa))
            (f (finite-automaton-accept nfa))
            (u (e-closure nfa (list q0) nil))
@@ -358,21 +355,36 @@
                       (state-predicate (car a)
                                        (car b))))))))
 
-;; Subset Construction Lecture: Algorithm 5
 (defun nfa->dfa (nfa)
   "Convert a nondeterministic finite automaton to a deterministic finite automaton."
-  (let ((visited-hash (make-symbol-hash-table))
+  (let ((visited-subsets (make-symbol-hash-table))
         (alphabet (remove :epsilon (finite-automaton-alphabet nfa))))
     (labels ((sort-subset (u)
-               ;; sort subsets so we can quickly test for previously
-               ;; visited subsets in the hash table
-               (sort u #'state-predicate))
-             (visit-symbol (edges subset-0 input-symbol)
-               (TODO 'nfa->dfa-visit-symbol))
+                          ;; sort subsets so we can quickly test for previously
+                          ;; visited subsets in the hash table
+                          (sort u #'state-predicate))
+             (visit-symbol (edges starting-subset input-symbol)
+                           (let ((new-subset (move-e-closure nfa starting-subset input-symbol)))
+                             (if new-subset
+                                 (let* ((new-edge `(,starting-subset ,input-symbol ,new-subset))
+                                        (updated-edges (sort-subset (cons new-edge edges))))
+                                   (visit-subset updated-edges new-subset))
+                                 edges)))
              (visit-subset (edges subset)
-               (TODO 'nfa->dfa-visit-subset)))
-      (TODO 'nfa->dfa))))
-
+                           (if (gethash subset visited-subsets)
+                               edges
+                               (labels ((update-edges (edges-state sigma) (visit-symbol edges-state subset sigma)))
+                                 (setf (gethash subset visited-subsets) subset)
+                                 (fold-left #'update-edges edges alphabet))))
+             ;  Used to aid in getting a list of values in the hashmap, in compination with maphash
+             (maphash-to-values (k v) (declare (ignore k)) v)
+             ;  Used in fold-left with the filter (remove-if-not) function to remove states with no accept
+             (remove-non-accept (state)
+                                (null (intersection state (finite-automaton-accept nfa) :test #'equal))))
+      (let* ((starting-subset (e-closure nfa (list (finite-automaton-start nfa)) nil))
+             (edges (visit-subset nil starting-subset))
+             (accept-subsets (remove-if-not #'remove-non-accept (maphash #'maphash-to-values visited-subsets))))
+        (make-fa edges starting-subset accept-subsets)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 2: Regular Expressions ;;;
@@ -400,39 +412,32 @@
 ;; - :.     -> (:union alphabet...)
 ;; - (:? X) -> (:union X :epsilon)
 ;; - (:+ X) -> (:concatenation X (:kleene-closure X))
-
 (defun simplify-regex (regex &optional alphabet)
   "Convert :., :?, :+ to only :union, :concatenation, :kleene-closure"
   (labels ((h (regex)
-             (cond
+              (cond
                ((eq regex :.)
-                (assert alphabet)
-                `(:union ,@alphabet))
+                 (assert alphabet)
+                 `(:union ,@alphabet))
                ((atom regex)
-                regex)
+                 regex)
                (t (destructuring-bind (operator &rest args) regex
-		    (case operator
-		      (:.
-		       (if alphabet
-			   `(:union ,@alphabet)
-			   '(:union :epsilon)))
-		      (:?
-		       (if (null args)
-			   `(:union ,@alphabet :epsilon)
-		           `(:union ,@(mapcar #'h args) :epsilon)))
-		      (:+
-		       (if (null args)
-			   `(:concatenation ,@alphabet (:kleene-closure ,@alphabet))
-			   `(:concatenation ,@(mapcar #'h args) (:kleene-closure ,@(mapcar #'h args)))))     
-		      (t
-		       (cons operator(mapcar #'h args)))))))))
+                    (case operator
+                      (:.
+                       (if alphabet
+                           `(:union ,@alphabet)
+                           '(:union :epsilon)))
+                      (:?
+                       (if (null args)
+                           `(:union ,@alphabet :epsilon)
+                           `(:union ,@(mapcar #'h args) :epsilon)))
+                      (:+
+                       (if (null args)
+                           `(:concatenation ,@alphabet (:kleene-closure ,@alphabet))
+                           `(:concatenation ,@(mapcar #'h args) (:kleene-closure ,@(mapcar #'h args)))))
+                      (t
+                       (cons operator (mapcar #'h args)))))))))
     (h regex)))
-
-;;; The functions FA-CONCATENATE, FA-UNION, and FA-REPEAT apply the
-;;; corresponding regular operation (union, concatenation, and
-;;; kleene-closure, respectively) to finite automata.  We will next
-;;; use these functions as subroutines to convert a regular expression
-;;; to an NFA.
 
 ;; Regular Expression Lecture: Concatenation.
 ;; Provided in complete form as an example
@@ -443,14 +448,31 @@
   (let ((start (newstate))
         (accept (newstate)))
     (make-fa (append (list (list start :epsilon (finite-automaton-start nfa-1)))
-                     (map 'list (lambda (x)
-                                  (list x :epsilon (finite-automaton-start nfa-2)))
-                          (finite-automaton-accept nfa-1))
-                     (map 'list (lambda (x)
-                                  (list x :epsilon accept))
-                          (finite-automaton-accept nfa-2))
-                     (finite-automaton-edges nfa-1)
-                     (finite-automaton-edges nfa-2))
+               (map 'list (lambda (x)
+                            (list x :epsilon (finite-automaton-start nfa-2)))
+                 (finite-automaton-accept nfa-1))
+               (map 'list (lambda (x)
+                            (list x :epsilon accept))
+                 (finite-automaton-accept nfa-2))
+               (finite-automaton-edges nfa-1)
+               (finite-automaton-edges nfa-2))
+             start
+             (list accept))))
+
+;; Regular Expression Lecture: Kleene-Closure
+(defun fa-repeat (nfa)
+  "Find the repetition / Kleene-closure of NFA."
+  (let ((start (newstate))
+        (accept (newstate)))
+    ;; Add new e-transition - new start to old nfa start
+    ;;               - old accept to new accept
+    ;;               - new start to new accept
+    ;;               - old accept to old start
+    (make-fa (append (list (list start :epsilon (finite-automaton-start nfa)))
+               (list (list start :epsilon accept))
+               (map 'list (lambda (x) (list x :epsilon start)) (finite-automaton-accept nfa))
+               (map 'list (lambda (x) (list x :epsilon accept)) (finite-automaton-accept nfa))
+               (finite-automaton-edges nfa))
              start
              (list accept))))
 
@@ -463,23 +485,37 @@
   (let ((start (newstate))
         (accept (newstate)))
     (make-fa (append (list (list start :epsilon (finite-automaton-start nfa-1)))
-                     (list (list start :epsilon (finite-automaton-start nfa-2)))
-		     (map 'list (lambda (x)
-                                  (list x :epsilon accept))
-                          (finite-automaton-accept nfa-1))
-                     (map 'list (lambda (x)
-                                  (list x :epsilon accept))
-                          (finite-automaton-accept nfa-2))
-                     (finite-automaton-edges nfa-1)
-                     (finite-automaton-edges nfa-2))
+               (list (list start :epsilon (finite-automaton-start nfa-2)))
+               (map 'list (lambda (x)
+                            (list x :epsilon accept))
+                 (finite-automaton-accept nfa-1))
+               (map 'list (lambda (x)
+                            (list x :epsilon accept))
+                 (finite-automaton-accept nfa-2))
+               (finite-automaton-edges nfa-1)
+               (finite-automaton-edges nfa-2))
              start
              (list accept))))
+;; MYT helper functions - Lecture 7 MYT
+(defun MYT-base (regex)
+  (if (null regex)
+      (make-fa nil (newstate) (list (newstate)))
+      (let ((start (newstate)) (accept (newstate)))
+        (make-fa (list (list start regex accept)) start (list accept)))))
 
-;; Regular Expression Lecture: Kleene-Closure
-(defun fa-repeat (nfa)
-  "Find the repetition / Kleene-closure of NFA."
-  (TODO 'fa-repeat))
+(defun MYT-concatenate (regex)
+  (labels ((conc (m r)
+                 (fa-concatenate m (regex->nfa r))))
+    (if (null regex)
+        (MYT-base :epsilon)
+        (fold-left #'conc (regex->nfa (car regex)) (cdr regex)))))
 
+(defun MYT-union (regex)
+  (labels ((uni (m r)
+                (fa-union m (regex->nfa r))))
+    (if (null regex)
+        (MYT-base regex)
+        (fold-left #'uni (regex->nfa (car regex)) (cdr regex)))))
 ;; McNaughton-Yamada-Thompson Algorithm Lecture: Algorithm 1
 ;;
 ;; Convert a regular expression to a nondeterministic finite
@@ -495,15 +531,52 @@
 (defun regex->nfa (regex)
   "Convert a regular expression to an NFA."
   (cond
-    ((null regex) ; Base case for empty set
+   ((null regex)
      (make-fa nil (newstate) (list (newstate))))
-    ;; TODO: other base cases
-    (t
-      (TODO 'regex->nfa))))
-
+   ((atom regex) ; Base case for empty set, empty string
+                (MYT-base regex))
+   ((eq (car regex) :kleene-closure)
+     (fa-repeat (regex->nfa (first (rest regex)))))
+   ((eq (car regex) :concatenation)
+     (MYT-concatenate (cdr regex)))
+   ((eq (car regex) :union)
+     (MYT-union (cdr regex)))
+   ;;Single symbol or empty set
+   (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 3: Regular Decision and Closure Properties ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Used in intersection and equivalent - finds cartesian product of a list of states (useful for finding accept states)
+(defun states-cartesian (states-0 states-1)
+  (labels ((outer-helper (outer-prod-list state-0)
+                         (labels ((inner-helper (prod-list state-1)
+                                                (cons (list state-0 state-1) prod-list)))
+                           (fold-left #'inner-helper outer-prod-list states-1))))
+    (fold-left #'outer-helper (list) states-0)))
+
+; Used in intersection and equivalent - finds cartesian product of edges (useful for constructing DFAS)
+(defun dfa-cartesian-edges (dfa-0 dfa-1)
+  (labels ((outer-helper (outer-edges dfa-0-edge)
+                         ; Deconstruct the edge in dfa-0
+                         (let ((edge-0-src (nth 0 dfa-0-edge))
+                               (edge-0-dst (nth 2 dfa-0-edge))
+                               (edge-0-tra (nth 1 dfa-0-edge)))
+                           (labels ((inner-helper (inner-edges dfa-1-edge)
+                                                  ; Deconstruct the edge in dfa-1
+                                                  (let ((edge-1-src (nth 0 dfa-1-edge))
+                                                        (edge-1-dst (nth 2 dfa-1-edge))
+                                                        (edge-1-tra (nth 1 dfa-0-edge)))
+                                                    ; Check if new edge is valid
+                                                    (if (equal edge-0-tra edge-1-tra)
+                                                        ; If the edges match, add a new edge to the cartesian
+                                                        (let ((new-src (list edge-0-src edge-1-src))
+                                                              (new-dst (list edge-0-dst edge-1-dst)))
+                                                          (cons (list new-src edge-0-tra new-dst) inner-edges))
+                                                        ; If the edges do not match, do not add a new edge to the cartesian
+                                                        inner-edges))))
+                             (fold-left #'inner-helper outer-edges (finite-automaton-edges dfa-1))))))
+    (fold-left #'outer-helper (list) (finite-automaton-edges dfa-0))))
 
 ;; Lecture: Decision Properties of Regular Languages, Emptiness
 (defun fa-empty (fa)
@@ -530,10 +603,19 @@
 
 ;; Lecture: Closure Properties of Regular Languages, Intersection
 (defun dfa-intersection (dfa-0 dfa-1)
-  "Return the intersection FA."
-  (TODO 'dfa-intersection))
+  (let ((accept (states-cartesian (finite-automaton-accept dfa-0) (finite-automaton-accept dfa-1)))
+        (start (list (finite-automaton-start dfa-0) (finite-automaton-start dfa-1)))
+        (edges (dfa-cartesian-edges dfa-0 dfa-1)))
+    (make-fa edges start accept)))
 
 ;; Lecture: Decision Properties of Regular Languages, Equivalence
 (defun dfa-equivalent (dfa-0 dfa-1)
-  "Do DFA-1 and DFA-2 recognize the same language?"
-  (TODO 'dfa-equivalent))
+  (let* ((dfa-0-accept (finite-automaton-accept dfa-0))
+         (dfa-0-no-accept (set-difference (finite-automaton-states dfa-0) dfa-0-accept))
+         (dfa-1-accept (finite-automaton-accept dfa-1))
+         (dfa-1-no-accept (set-difference (finite-automaton-states dfa-1) dfa-1-accept))
+         (accept (union (states-cartesian dfa-0-accept dfa-1-no-accept) (states-cartesian dfa-1-accept dfa-0-no-accept)))
+         (start (list (finite-automaton-start dfa-0) (finite-automaton-start dfa-1)))
+         (edges (dfa-cartesian-edges dfa-0 dfa-1))
+         (new-dfa (make-fa edges start accept)))
+    (not (fa-empty new-dfa))))
