@@ -510,10 +510,23 @@
   "Does FA represent the empty set?"
   (TODO 'fa-empty))
 
+(defun regex-reverse (e)
+  (if (atom e)
+      e
+      (case (car e)
+	(:union (cons :union
+		      (map 'list #'regex-reverse
+			   (cdr e))))
+	(:concatenation (cons :concatenation
+			      (map 'list #'regex-reverse
+				   (reverse (cdr e)))))
+	(:kleene-closure (list :kleene-closure
+			       (regex-reverse (second e)))))))
+
 ;; Lecture: Closure Properties of Regular Languages, State Minimization
 (defun dfa-minimize (dfa)
   "Return an equivalent DFA with minimum state."
-  (TODO 'dfa-minimize))
+  (nfa-dfa (regex-reverse (nfa-dfa (regex-reverse dfa)))))
 
 ;; Lecture: Closure Properties of Regular Languages, Intersection
 (defun dfa-intersection (dfa-0 dfa-1)
