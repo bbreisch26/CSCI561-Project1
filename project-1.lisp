@@ -583,19 +583,14 @@
   "Does FA represent the empty set?"
   (TODO 'fa-empty))
 
-(defun regex-reverse (e)
-    (let ((start (newstate))                                                                                         
-        (accept (newstate)))                                                                                             ;; Add new e-transition - new start to old nfa start                                                             
-    ;;               - old accept to new accept                                                                      
-    ;;               - new start to new accept                                                                      
-    ;;               - old accept to old start                                                                       
-    (make-fa (append (list (list start :epsilon (finite-automaton-start nfa)))                                       
-               (list (list start :epsilon accept))                                                                   
-               (map 'list (lambda (x) (list x :epsilon start)) (finite-automaton-accept nfa))                        
-               (map 'list (lambda (x) (list x :epsilon accept)) (finite-automaton-accept nfa))                       
-               (finite-automaton-edges nfa))                                                                         
+(defun regex-reverse (fa)
+    (let (start (newstate))                                                                                         
+    ;; Add new e-transition - start to old accepts                                                                                                                         
+    (make-fa (append (map 'list (lambda (x) (list start :epsilon x)) (finite-automaton-accept fa))                       
+		     ;;Reverse edge map goes here
+		     )
              start                                                                                                   
-             (list accept))))  
+             (list (finite-automation-start fa)))))  
 
 ;; Lecture: Closure Properties of Regular Languages, State Minimization
 (defun dfa-minimize (dfa)
