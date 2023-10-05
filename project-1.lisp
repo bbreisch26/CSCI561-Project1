@@ -585,10 +585,10 @@
 
 (defun regex-reverse (fa)
     (let (start (newstate))                                                                                         
-    ;; Add new e-transition - start to old accepts                                                                                                                         
-    (make-fa (append (map 'list (lambda (x) (list start :epsilon x)) (finite-automaton-accept fa))                       
-		     ;;Reverse edge map goes here
-		     )
+    ;; Add new e-transition - start to old accepts                                                                                                    
+    (make-fa (append (map 'list (lambda (x) (list start :epsilon x)) (finite-automaton-accept fa))                
+		     ;;Reverse edge map goes here this might work?
+		    (map 'list (lambda (x) (reverse x)) (finite-automation-edges))
              start                                                                                                   
              (list (finite-automation-start fa)))))  
 
