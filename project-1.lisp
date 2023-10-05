@@ -584,22 +584,23 @@
   (TODO 'fa-empty))
 
 (defun regex-reverse (e)
-  (if (atom e)
-      e
-      (case (car e)
-	(:union (cons :union
-		      (map 'list #'regex-reverse
-			   (cdr e))))
-	(:concatenation (cons :concatenation
-			      (map 'list #'regex-reverse
-				   (reverse (cdr e)))))
-	(:kleene-closure (list :kleene-closure
-			       (regex-reverse (second e)))))))
+    (let ((start (newstate))                                                                                         
+        (accept (newstate)))                                                                                             ;; Add new e-transition - new start to old nfa start                                                             
+    ;;               - old accept to new accept                                                                      
+    ;;               - new start to new accept                                                                      
+    ;;               - old accept to old start                                                                       
+    (make-fa (append (list (list start :epsilon (finite-automaton-start nfa)))                                       
+               (list (list start :epsilon accept))                                                                   
+               (map 'list (lambda (x) (list x :epsilon start)) (finite-automaton-accept nfa))                        
+               (map 'list (lambda (x) (list x :epsilon accept)) (finite-automaton-accept nfa))                       
+               (finite-automaton-edges nfa))                                                                         
+             start                                                                                                   
+             (list accept))))  
 
 ;; Lecture: Closure Properties of Regular Languages, State Minimization
 (defun dfa-minimize (dfa)
   "Return an equivalent DFA with minimum state."
-  (nfa-dfa (regex-reverse (nfa-dfa (regex-reverse dfa)))))
+  (nfa->dfa (regex-reverse (nfa->dfa (regex-reverse dfa)))))
 
 ;; Lecture: Closure Properties of Regular Languages, Intersection
 (defun dfa-intersection (dfa-0 dfa-1)
