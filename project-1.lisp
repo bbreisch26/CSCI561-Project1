@@ -496,6 +496,7 @@
                (finite-automaton-edges nfa-2))
              start
              (list accept))))
+
 ;; MYT helper functions - Lecture 7 MYT
 (defun MYT-base (regex)
   (if (null regex)
@@ -584,13 +585,13 @@
   (TODO 'fa-empty))
 
 (defun regex-reverse (fa)
-    (let (start (newstate))                                                                                         
-    ;; Add new e-transition - start to old accepts                                                                                                    
-    (make-fa (append (map 'list (lambda (x) (list start :epsilon x)) (finite-automaton-accept fa))                
+  (let ((start (newstate)))
+    ;; Add new e-transition - start to old accepts 
+    (make-fa (append (map 'list (lambda (x) (list start :epsilon x)) (finite-automaton-accept fa))   
 		     ;;Reverse edge map goes here this might work?
-		    (map 'list (lambda (x) (reverse x)) (finite-automation-edges))
-             start                                                                                                   
-             (list (finite-automation-start fa)))))  
+		     (map 'list (lambda (x) (reverse x)) (finite-automaton-edges fa)))
+             start                                                                  
+             (list (finite-automaton-start fa)))))
 
 ;; Lecture: Closure Properties of Regular Languages, State Minimization
 (defun dfa-minimize (dfa)
