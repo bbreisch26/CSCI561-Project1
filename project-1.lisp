@@ -582,12 +582,24 @@
 ;; Lecture: Decision Properties of Regular Languages, Emptiness
 (defun fa-empty (fa)
   "Does FA represent the empty set?"
-  (let ((reachable-states (list (finite-automaton-start fa))))
-    (if (null (finite-automaton-accept fa))
-	t
-	(not (fold-fa-alphabet (lambda (state symbol)
-			  (and (not (null state)) (null (intersection (fa-transition fa state symbol) (finite-automaton-accept fa) )))) reachable-states fa)))) 
-  )
+  ;; Use hash tables to keep track of accept states and visited hashes
+  (let ((acceptstates (make-symbol-hash-table))
+	(visitedhash (make-symbol-hash-table)))
+    ;;sort subsets to find previously visited subsets in hashtable
+    (labels ((find_accept (state)
+	       (if (car state)
+		   ;;state is an accept state
+		   (if (gethash (car state) acceptstates)
+		       t
+		       ;;not an accept state and have visited this state?
+		       (if (gethash (car state) visitedhash)
+			   nil
+			   (progn (setf (gethash (car state) visitedhash) t)
+			   (fold-fa-alphabet (lambda (acc symbol) (or acc (find_accept (fa-transition fa (car state) symbol)))) nil fa))))
+		   nil)))
+    ;;Set initial accept state values in hash table
+    (map-fa-accept (lambda (accept) (setf (gethash accept acceptstates) t)) fa)
+    (not (find_accept (list (finite-automaton-start fa))))))))
 
 (defun regex-reverse (fa)
   (let ((start (newstate)))
