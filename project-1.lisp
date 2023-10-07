@@ -562,7 +562,7 @@
                                                   ; Deconstruct the edge in dfa-1
                                                   (let ((edge-1-src (nth 0 dfa-1-edge))
                                                         (edge-1-dst (nth 2 dfa-1-edge))
-                                                        (edge-1-tra (nth 1 dfa-0-edge)))
+                                                        (edge-1-tra (nth 1 dfa-1-edge)))
                                                     ; Check if new edge is valid
                                                     (if (equal edge-0-tra edge-1-tra)
                                                         ; If the edges match, add a new edge to the cartesian
