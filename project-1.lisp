@@ -531,6 +531,19 @@
 ;; - (:concatenation (:union a b) (:kleene-closure c))
 (defun regex->nfa (regex)
   "Convert a regular expression to an NFA."
+  (labels ((MYT-base (regex)
+	     (if (null regex)
+		 (make-fa nil (newstate) (list (newstate)))
+		 (let ((start (newstate)) (accept (newstate)))
+		   (make-fa (list (list start regex accept)) start (list accept)))))
+	   (MYT-union (regex)
+	     (if (null regex)
+		 (MYT-base regex)
+		 (fold-left (lambda (m r) (fa-union m (regex->nfa r))) (regex->nfa (car regex)) (cdr regex))))
+	   (MYT-concatenate (regex)
+	     (if (null regex)
+		 (MYT-base :epsilon)
+		 (fold-left (lambda (m r) (fa-concatenate m (regex->nfa r))) (regex->nfa (car regex)) (cdr regex)))))
   (cond
    ((null regex)
      (make-fa nil (newstate) (list (newstate))))
@@ -543,7 +556,7 @@
    ((eq (car regex) :union)
      (MYT-union (cdr regex)))
    ;;Single symbol or empty set
-   (t nil)))
+   (t nil))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 3: Regular Decision and Closure Properties ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
