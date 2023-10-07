@@ -497,26 +497,7 @@
              start
              (list accept))))
 
-;; MYT helper functions - Lecture 7 MYT
-(defun MYT-base (regex)
-  (if (null regex)
-      (make-fa nil (newstate) (list (newstate)))
-      (let ((start (newstate)) (accept (newstate)))
-        (make-fa (list (list start regex accept)) start (list accept)))))
 
-(defun MYT-concatenate (regex)
-  (labels ((conc (m r)
-                 (fa-concatenate m (regex->nfa r))))
-    (if (null regex)
-        (MYT-base :epsilon)
-        (fold-left #'conc (regex->nfa (car regex)) (cdr regex)))))
-
-(defun MYT-union (regex)
-  (labels ((uni (m r)
-                (fa-union m (regex->nfa r))))
-    (if (null regex)
-        (MYT-base regex)
-        (fold-left #'uni (regex->nfa (car regex)) (cdr regex)))))
 ;; McNaughton-Yamada-Thompson Algorithm Lecture: Algorithm 1
 ;;
 ;; Convert a regular expression to a nondeterministic finite
@@ -612,7 +593,7 @@
 		   nil)))
     ;;Set initial accept state values in hash table
     (map-fa-accept (lambda (accept) (setf (gethash accept acceptstates) t)) fa)
-    (not (find_accept (list (finite-automaton-start fa))))))))
+    (not (find_accept (list (finite-automaton-start fa)))))))
 
 (defun regex-reverse (fa)
   (let ((start (newstate)))
