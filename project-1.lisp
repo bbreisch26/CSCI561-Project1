@@ -375,16 +375,17 @@
                                edges
                                (labels ((update-edges (edges-state sigma) (visit-symbol edges-state subset sigma)))
                                  (setf (gethash subset visited-subsets) subset)
-                                 (fold-left #'update-edges edges alphabet))))
-             ;  Used to aid in getting a list of values in the hashmap, in compination with maphash
-             (maphash-to-values (k v) (declare (ignore k)) v)
-             ;  Used in fold-left with the filter (remove-if-not) function to remove states with no accept
-             (remove-non-accept (state)
-                                (null (intersection state (finite-automaton-accept nfa) :test #'equal))))
+                                 (fold-left #'update-edges edges alphabet)))))
       (let* ((starting-subset (e-closure nfa (list (finite-automaton-start nfa)) nil))
              (edges (visit-subset nil starting-subset))
-             (accept-subsets (remove-if-not #'remove-non-accept (maphash #'maphash-to-values visited-subsets))))
-        (make-fa edges starting-subset accept-subsets)))))
+             (old-accept (finite-automaton-accept nfa))
+             (new-accept (list)))
+        (labels ((push-if-accept (k v)
+                                 (declare (ignore k))
+                                 (if (not (null (intersection v old-accept)))
+                                     (push v new-accept))))
+          (maphash #'push-if-accept visited-subsets)
+          (make-fa edges starting-subset new-accept))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 2: Regular Expressions ;;;
