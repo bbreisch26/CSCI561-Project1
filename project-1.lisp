@@ -595,8 +595,9 @@
     (map-fa-accept (lambda (accept) (setf (gethash accept acceptstates) t)) fa)
     (not (find_accept (list (finite-automaton-start fa)))))))
 
-(defun regex-reverse (fa)
-  (let ((start (newstate)))
+;; Reverse function for any fa
+(defun fa-reverse (fa)
+  (let ((start (newstate "S-")))
     ;; Add new e-transition - start to old accepts 
     (make-fa (append (map 'list (lambda (x) (list start :epsilon x)) (finite-automaton-accept fa))   
 		     ;;Reverse edge map goes here this might work?
@@ -606,8 +607,7 @@
 
 ;; Lecture: Closure Properties of Regular Languages, State Minimization
 (defun dfa-minimize (dfa)
-  "Return an equivalent DFA with minimum state."
-  (nfa->dfa (regex-reverse (nfa->dfa (regex-reverse dfa)))))
+  (nfa->dfa (fa-reverse (nfa->dfa (fa-reverse dfa)))))
 
 ;; Lecture: Closure Properties of Regular Languages, Intersection
 (defun dfa-intersection (dfa-0 dfa-1)
