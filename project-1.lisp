@@ -497,26 +497,8 @@
                (finite-automaton-edges nfa-2))
              start
              (list accept))))
-;; MYT helper functions - Lecture 7 MYT
-(defun MYT-base (regex)
-  (if (null regex)
-      (make-fa nil (newstate) (list (newstate)))
-      (let ((start (newstate)) (accept (newstate)))
-        (make-fa (list (list start regex accept)) start (list accept)))))
 
-(defun MYT-concatenate (regex)
-  (labels ((conc (m r)
-                 (fa-concatenate m (regex->nfa r))))
-    (if (null regex)
-        (MYT-base :epsilon)
-        (fold-left #'conc (regex->nfa (car regex)) (cdr regex)))))
 
-(defun MYT-union (regex)
-  (labels ((uni (m r)
-                (fa-union m (regex->nfa r))))
-    (if (null regex)
-        (MYT-base regex)
-        (fold-left #'uni (regex->nfa (car regex)) (cdr regex)))))
 ;; McNaughton-Yamada-Thompson Algorithm Lecture: Algorithm 1
 ;;
 ;; Convert a regular expression to a nondeterministic finite
@@ -531,6 +513,19 @@
 ;; - (:concatenation (:union a b) (:kleene-closure c))
 (defun regex->nfa (regex)
   "Convert a regular expression to an NFA."
+  (labels ((MYT-base (regex)
+	     (if (null regex)
+		 (make-fa nil (newstate) (list (newstate)))
+		 (let ((start (newstate)) (accept (newstate)))
+		   (make-fa (list (list start regex accept)) start (list accept)))))
+	   (MYT-union (regex)
+	     (if (null regex)
+		 (MYT-base regex)
+		 (fold-left (lambda (m r) (fa-union m (regex->nfa r))) (regex->nfa (car regex)) (cdr regex))))
+	   (MYT-concatenate (regex)
+	     (if (null regex)
+		 (MYT-base :epsilon)
+		 (fold-left (lambda (m r) (fa-concatenate m (regex->nfa r))) (regex->nfa (car regex)) (cdr regex)))))
   (cond
    ((null regex)
      (make-fa nil (newstate) (list (newstate))))
@@ -543,7 +538,7 @@
    ((eq (car regex) :union)
      (MYT-union (cdr regex)))
    ;;Single symbol or empty set
-   (t nil)))
+   (t nil))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 3: Regular Decision and Closure Properties ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -582,12 +577,38 @@
 ;; Lecture: Decision Properties of Regular Languages, Emptiness
 (defun fa-empty (fa)
   "Does FA represent the empty set?"
-  (TODO 'fa-empty))
+  ;; Use hash tables to keep track of accept states and visited hashes
+  (let ((acceptstates (make-symbol-hash-table))
+	(visitedhash (make-symbol-hash-table)))
+    ;;sort subsets to find previously visited subsets in hashtable
+    (labels ((find_accept (state)
+	       (if (car state)
+		   ;;state is an accept state
+		   (if (gethash (car state) acceptstates)
+		       t
+		       ;;not an accept state and have visited this state?
+		       (if (gethash (car state) visitedhash)
+			   nil
+			   (progn (setf (gethash (car state) visitedhash) t)
+			   (fold-fa-alphabet (lambda (acc symbol) (or acc (find_accept (fa-transition fa (car state) symbol)))) nil fa))))
+		   nil)))
+    ;;Set initial accept state values in hash table
+    (map-fa-accept (lambda (accept) (setf (gethash accept acceptstates) t)) fa)
+    (not (find_accept (list (finite-automaton-start fa)))))))
+
+;; Reverse function for any fa
+(defun fa-reverse (fa)
+  (let ((start (newstate "S-")))
+    ;; Add new e-transition - start to old accepts 
+    (make-fa (append (map 'list (lambda (x) (list start :epsilon x)) (finite-automaton-accept fa))   
+		     ;;Reverse edge map goes here this might work?
+		     (map 'list (lambda (x) (reverse x)) (finite-automaton-edges fa)))
+             start                                                                  
+             (list (finite-automaton-start fa)))))
 
 ;; Lecture: Closure Properties of Regular Languages, State Minimization
 (defun dfa-minimize (dfa)
-  "Return an equivalent DFA with minimum state."
-  (TODO 'dfa-minimize))
+  (nfa->dfa (fa-reverse (nfa->dfa (fa-reverse dfa)))))
 
 ;; Lecture: Closure Properties of Regular Languages, Intersection
 (defun dfa-intersection (dfa-0 dfa-1)
