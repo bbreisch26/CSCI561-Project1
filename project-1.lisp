@@ -581,7 +581,12 @@
 ;; Lecture: Decision Properties of Regular Languages, Emptiness
 (defun fa-empty (fa)
   "Does FA represent the empty set?"
-  (TODO 'fa-empty))
+  (let ((reachable-states (list (finite-automaton-start fa))))
+    (if (null (finite-automaton-accept fa))
+	t
+	(not (fold-fa-alphabet (lambda (state symbol)
+			  (and (not (null state)) (null (intersection (fa-transition fa state symbol) (finite-automaton-accept fa) )))) reachable-states fa)))) 
+  )
 
 ;; Lecture: Closure Properties of Regular Languages, State Minimization
 (defun dfa-minimize (dfa)
