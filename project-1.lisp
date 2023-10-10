@@ -562,17 +562,15 @@
     (if (null rej-trans)
         dfa
         (let* ((reject-title "this-is-the-added-reject-state")
-              (reject-loopback-edges (maplist (lambda (x) (list reject-title (car x) reject-title)) (finite-automaton-alphabet dfa)))
+               (reject-loopback-edges (maplist (lambda (x) (list reject-title (car x) reject-title)) (finite-automaton-alphabet dfa)))
 
                (reject-edges (union reject-loopback-edges (maplist (lambda (x)
-                                        (let* ((edge (car x))
-                                               (src (nth 0 edge))
-                                               (tra (nth 1 edge)))
-                                          (list src tra reject-title))) rej-trans)))
+                                                                     (let* ((edge (car x))
+                                                                            (src (nth 0 edge))
+                                                                            (tra (nth 1 edge)))
+                                                                       (list src tra reject-title))) rej-trans)))
                (new-edges (union reject-edges (finite-automaton-edges dfa))))
-          (make-fa new-edges (finite-automaton-start dfa) (finite-automaton-accept dfa)))
-        ; (list src-trans-pre 'lol rej-trans)
-        )))
+          (make-fa new-edges (finite-automaton-start dfa) (finite-automaton-accept dfa))))))
 
 ; Used in intersection and equivalent - finds cartesian product of edges (useful for constructing DFAS)
 (defun dfa-cartesian-edges (dfa-0 dfa-1)
