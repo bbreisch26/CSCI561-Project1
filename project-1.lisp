@@ -364,7 +364,7 @@
                           ;; visited subsets in the hash table
                           (sort u #'state-predicate))
              (visit-symbol (edges starting-subset input-symbol)
-                           (let ((new-subset (move-e-closure nfa starting-subset input-symbol)))
+                           (let ((new-subset (sort-subset (move-e-closure nfa starting-subset input-symbol))))
                              (if new-subset
                                  (let* ((new-edge `(,starting-subset ,input-symbol ,new-subset))
                                         (updated-edges (sort-subset (cons new-edge edges))))
