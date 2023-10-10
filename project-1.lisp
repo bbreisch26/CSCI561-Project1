@@ -514,31 +514,31 @@
 (defun regex->nfa (regex)
   "Convert a regular expression to an NFA."
   (labels ((MYT-base (regex)
-	     (if (null regex)
-		 (make-fa nil (newstate) (list (newstate)))
-		 (let ((start (newstate)) (accept (newstate)))
-		   (make-fa (list (list start regex accept)) start (list accept)))))
-	   (MYT-union (regex)
-	     (if (null regex)
-		 (MYT-base regex)
-		 (fold-left (lambda (m r) (fa-union m (regex->nfa r))) (regex->nfa (car regex)) (cdr regex))))
-	   (MYT-concatenate (regex)
-	     (if (null regex)
-		 (MYT-base :epsilon)
-		 (fold-left (lambda (m r) (fa-concatenate m (regex->nfa r))) (regex->nfa (car regex)) (cdr regex)))))
-  (cond
-   ((null regex)
-     (make-fa nil (newstate) (list (newstate))))
-   ((atom regex) ; Base case for empty set, empty string
-                (MYT-base regex))
-   ((eq (car regex) :kleene-closure)
-     (fa-repeat (regex->nfa (first (rest regex)))))
-   ((eq (car regex) :concatenation)
-     (MYT-concatenate (cdr regex)))
-   ((eq (car regex) :union)
-     (MYT-union (cdr regex)))
-   ;;Single symbol or empty set
-   (t nil))))
+                     (if (null regex)
+                         (make-fa nil (newstate) (list (newstate)))
+                         (let ((start (newstate)) (accept (newstate)))
+                           (make-fa (list (list start regex accept)) start (list accept)))))
+           (MYT-union (regex)
+                      (if (null regex)
+                          (MYT-base regex)
+                          (fold-left (lambda (m r) (fa-union m (regex->nfa r))) (regex->nfa (car regex)) (cdr regex))))
+           (MYT-concatenate (regex)
+                            (if (null regex)
+                                (MYT-base :epsilon)
+                                (fold-left (lambda (m r) (fa-concatenate m (regex->nfa r))) (regex->nfa (car regex)) (cdr regex)))))
+    (cond
+     ((null regex)
+       (make-fa nil (newstate) (list (newstate))))
+     ((atom regex) ; Base case for empty set, empty string
+                  (MYT-base regex))
+     ((eq (car regex) :kleene-closure)
+       (fa-repeat (regex->nfa (first (rest regex)))))
+     ((eq (car regex) :concatenation)
+       (MYT-concatenate (cdr regex)))
+     ((eq (car regex) :union)
+       (MYT-union (cdr regex)))
+     ;;Single symbol or empty set
+     (t nil))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 3: Regular Decision and Closure Properties ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -550,6 +550,29 @@
                                                 (cons (list state-0 state-1) prod-list)))
                            (fold-left #'inner-helper outer-prod-list states-1))))
     (fold-left #'outer-helper (list) states-0)))
+
+(defun add-reject-if-necessary-to-dfa (dfa)
+  (let* ((src-trans-all (states-cartesian (finite-automaton-states dfa) (finite-automaton-alphabet dfa)))
+         (src-trans-pre (maplist (lambda (x)
+                                   (let* ((edge (car x))
+                                          (src (nth 0 edge))
+                                          (tra (nth 1 edge)))
+                                     (list src tra))) (finite-automaton-edges dfa)))
+         (rej-trans (set-difference src-trans-all src-trans-pre :test #'equal)))
+    (if (null rej-trans)
+        dfa
+        (let* ((reject-title "this-is-the-added-reject-state")
+              (reject-loopback-edges (maplist (lambda (x) (list reject-title (car x) reject-title)) (finite-automaton-alphabet dfa)))
+
+               (reject-edges (union reject-loopback-edges (maplist (lambda (x)
+                                        (let* ((edge (car x))
+                                               (src (nth 0 edge))
+                                               (tra (nth 1 edge)))
+                                          (list src tra reject-title))) rej-trans)))
+               (new-edges (union reject-edges (finite-automaton-edges dfa))))
+          (make-fa new-edges (finite-automaton-start dfa) (finite-automaton-accept dfa)))
+        ; (list src-trans-pre 'lol rej-trans)
+        )))
 
 ; Used in intersection and equivalent - finds cartesian product of edges (useful for constructing DFAS)
 (defun dfa-cartesian-edges (dfa-0 dfa-1)
@@ -579,31 +602,31 @@
   "Does FA represent the empty set?"
   ;; Use hash tables to keep track of accept states and visited hashes
   (let ((acceptstates (make-symbol-hash-table))
-	(visitedhash (make-symbol-hash-table)))
+        (visitedhash (make-symbol-hash-table)))
     ;;sort subsets to find previously visited subsets in hashtable
     (labels ((find_accept (state)
-	       (if (car state)
-		   ;;state is an accept state
-		   (if (gethash (car state) acceptstates)
-		       t
-		       ;;not an accept state and have visited this state?
-		       (if (gethash (car state) visitedhash)
-			   nil
-			   (progn (setf (gethash (car state) visitedhash) t)
-			   (fold-fa-alphabet (lambda (acc symbol) (or acc (find_accept (fa-transition fa (car state) symbol)))) nil fa))))
-		   nil)))
-    ;;Set initial accept state values in hash table
-    (map-fa-accept (lambda (accept) (setf (gethash accept acceptstates) t)) fa)
-    (not (find_accept (list (finite-automaton-start fa)))))))
+                          (if (car state)
+                              ;;state is an accept state
+                              (if (gethash (car state) acceptstates)
+                                  t
+                                  ;;not an accept state and have visited this state?
+                                  (if (gethash (car state) visitedhash)
+                                      nil
+                                      (progn (setf (gethash (car state) visitedhash) t)
+                                             (fold-fa-alphabet (lambda (acc symbol) (or acc (find_accept (fa-transition fa (car state) symbol)))) nil fa))))
+                              nil)))
+      ;;Set initial accept state values in hash table
+      (map-fa-accept (lambda (accept) (setf (gethash accept acceptstates) t)) fa)
+      (not (find_accept (list (finite-automaton-start fa)))))))
 
 ;; Reverse function for any fa
 (defun fa-reverse (fa)
   (let ((start (newstate "S-")))
     ;; Add new e-transition - start to old accepts 
-    (make-fa (append (map 'list (lambda (x) (list start :epsilon x)) (finite-automaton-accept fa))   
-		     ;;Reverse edge map goes here this might work?
-		     (map 'list (lambda (x) (reverse x)) (finite-automaton-edges fa)))
-             start                                                                  
+    (make-fa (append (map 'list (lambda (x) (list start :epsilon x)) (finite-automaton-accept fa))
+               ;;Reverse edge map goes here this might work?
+               (map 'list (lambda (x) (reverse x)) (finite-automaton-edges fa)))
+             start
              (list (finite-automaton-start fa)))))
 
 ;; Lecture: Closure Properties of Regular Languages, State Minimization
@@ -618,14 +641,15 @@
     (make-fa edges start accept)))
 
 ;; Lecture: Decision Properties of Regular Languages, Equivalence
-(defun dfa-equivalent (dfa-0 dfa-1)
-  (let* ((dfa-0-accept (finite-automaton-accept dfa-0))
-         (dfa-0-no-accept (set-difference (finite-automaton-states dfa-0) dfa-0-accept))
+(defun dfa-equivalent (dfa-0-pre dfa-1-pre)
+  (let* ((dfa-0 (add-reject-if-necessary-to-dfa dfa-0-pre))
+         (dfa-1 (add-reject-if-necessary-to-dfa dfa-1-pre))
+         (dfa-0-accept (finite-automaton-accept dfa-0))
+         (dfa-0-no-accept (set-difference (finite-automaton-states dfa-0) dfa-0-accept :test #'equal))
          (dfa-1-accept (finite-automaton-accept dfa-1))
-         (dfa-1-no-accept (set-difference (finite-automaton-states dfa-1) dfa-1-accept))
+         (dfa-1-no-accept (set-difference (finite-automaton-states dfa-1) dfa-1-accept :test #'equal))
          (accept (union (states-cartesian dfa-0-accept dfa-1-no-accept) (states-cartesian dfa-0-no-accept dfa-1-accept)))
          (start (list (finite-automaton-start dfa-0) (finite-automaton-start dfa-1)))
          (edges (dfa-cartesian-edges dfa-0 dfa-1))
          (new-dfa (make-fa edges start accept)))
-    (fa-empty new-dfa)
-    ))
+    (fa-empty new-dfa)))
