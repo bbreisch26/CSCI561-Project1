@@ -1,0 +1,7 @@
+("dfa-equivalent" :PASS 344 :COUNT 400 :POINTS 8.6d0 :MAX 10)
+("dfa-intersection" :PASS 400 :COUNT 400 :POINTS 10.0d0 :MAX 10)
+("dfa-minimize" :PASS 15 :COUNT 20 :POINTS 11.25d0 :MAX 15)
+("nfa-to-dfa" :PASS 20 :COUNT 20 :POINTS 30.0d0 :MAX 30)
+("regex-to-nfa" :PASS 20 :COUNT 20 :POINTS 25.0d0 :MAX 25)
+("simplify-regex" :PASS 6 :COUNT 6 :POINTS 10.0d0 :MAX 10)
+("total" :POINTS 95 :MAX 100)
