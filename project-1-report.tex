@@ -48,7 +48,11 @@
   \begin{enumerate}
     \item Prove that NFA simulation is possible in $O(|Q|*|\sigma|)$
       time.%
-      \par \textbf{Answer 3a:} Using Thompson's implementation of NFA simulate it is possible to preform the algoritm in the runtime of $O(|Q|*|\sigma|)$. 
+      \par \textbf{Answer 3a:} Using Thompson's implementation of NFA simulate it is possible to preform the algoritm in the runtime of $O(|Q|*|\sigma|)$. 1. Initialize two lists a current states list and a list of next states.
+    2. Fill current states list with the start state. 
+    3. For each character in the string loop through the current states and find the next states add to list. If one next state is an accept state break and print string in language. 
+    4. set current states list to be next states list then move to next string. If no new next states break and print string not in language.
+    5. This is time complexity of $|\sigma| * |Q|$ because you go through length of string and for each character you loop through each state. The worst case can be looping through all the states in the NFA which is $|Q|$. This means that it could end up taking  $|\sigma| * |Q|$.
 
     \item Why is there such a difference in performance between
       Thompson's grep and some other ``regex'' engines?
