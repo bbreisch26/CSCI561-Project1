@@ -50,7 +50,8 @@
     time.%
 
     \item Why is there such a difference in performance between
-    Thompson's grep and some other ``regex'' engines?
+      Thompson's grep and some other ``regex'' engines?
+      \par \textbf{Answer 3b:} The reasons there is a difference in the performance between Thompson's grep and other regex engines like perl is because some regex engines like perl use backtracking in their implementations on nfa simulate while Thompson's uses a smarter approach of perfect guessing which allows the fa to be in multiple states at once. Thompson's approach only tracks reachable states from current states, not the paths themselves. If the string does not belong it will quit as soon as there are no possible next states to transition using the current character of the string being simulated on NFA. In the perl approach it tries one path and if that fails to reach the accept state it will try the next path. And in the instance that a string does not belong in the language the perl method of NFA simulate will result in all possible execution paths being tried before failing. This backtracking simple recursive method is exponential in its runtime in terms of sigma. 
   \end{enumerate}
 
 
