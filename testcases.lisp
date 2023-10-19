@@ -26,13 +26,26 @@
              (q2 2 q2))
            'q0
            '(q2)))
+(defparameter *dfa-3*
+  (make-fa '((q0 0 q1)
+	     (q0 1 q3)
+	     (q1 0 q4)
+	     (q3 0 q4))
+	   'q0
+	   '(q4)))(defparameter *dfa-1*
+  (make-fa '((q0 0 q1)
+             (q1 1 q0))
+           'q0
+           '(q1)))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Part 0: DFA Simulation ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(print (dfa-simulate *dfa-1* '(0 1 0)))
+(print (dfa-minimize *dfa-3*))
+;;(print (dfa-simulate *dfa-1* '(0 1 0)))
 ;; => t
 
 
