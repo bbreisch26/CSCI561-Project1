@@ -35,7 +35,7 @@
   written by Ken Thompson) converted the provided regular expression
   to an NFA and then simulated the NFA on the input text.  Why would
   Thompson have used NFA simulation instead of DFA simulation?
-  \par \textbf{Answer 2:} I would assume he made this choice for a couple of reasons. The first is I believe that Thompson in 1972 was probably memory constrained, but converting from an NFA to a DFA usually results in a larger DFA. The worst case can be up to $2^n$ nodes more in DFA than NFA  which is exponentially bad in memory constrained environments. Another reason I believe this decision was made is that on top of the memeory constraint issues the time it takes to preform subset construction to convert an NFA to a DFA added plus the time to then preform dfa-simulate was usually not much faster than just preforming nfa-simulate, especially if most nfa's created did not end up being extremely complicated. 
+  \par \textbf{Answer 2:} I would assume he made this choice for a couple of reasons. The first is I believe that Thompson in 1972 was probably memory constrained, but converting from an NFA to a DFA usually results in a larger DFA. The worst case can be up to $2^n$ nodes more in DFA than NFA  which is exponentially bad in memory constrained environments. Another reason I believe this decision was made is that on top of the memory constraint issues the time it takes to preform subset construction to convert an NFA to a DFA added plus the time to then preform dfa-simulate was usually not much faster than just preforming Thompson's implementation of  nfa-simulate, especially if most nfa's created did not end up being extremely complicated. 
 
   \item \textbf{Time Complexity:} To simulate an NFA
   $N=\lmtuple{Q}{\Sigma}{\delta}{q_0}{F}$ on string $\sigma$ using the
@@ -47,7 +47,8 @@
 
   \begin{enumerate}
     \item Prove that NFA simulation is possible in $O(|Q|*|\sigma|)$
-    time.%
+      time.%
+      \par \textbf{Answer 3a:} Using Thompson's implementation of NFA simulate it is possible to preform the algoritm in the runtime of $O(|Q|*|\sigma|)$. 
 
     \item Why is there such a difference in performance between
       Thompson's grep and some other ``regex'' engines?
