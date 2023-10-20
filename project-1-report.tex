@@ -6,7 +6,7 @@
 \title{Project 1: Regular Languages and Pursuit-Evasion}
 \author{CSCI 561}
 
-\rhead{Names:}
+\rhead{Names: Luke Beukelman, Ben Breisch, Luc Lafave, Adam Thistlewood}
 
 %\keytrue
 
@@ -40,7 +40,7 @@
   written by Ken Thompson) converted the provided regular expression
   to an NFA and then simulated the NFA on the input text.  Why would
   Thompson have used NFA simulation instead of DFA simulation?
-  \par \textbf{Answer 2:} I would assume he made this choice for a couple of reasons. The first is I believe that Thompson in 1972 was probably memory constrained, but converting from an NFA to a DFA usually results in a larger DFA. The worst case can be up to $2^n$ nodes more in DFA than NFA  which is exponentially bad in memory constrained environments. Another reason I believe this decision was made is that on top of the memory constraint issues the time it takes to preform subset construction to convert an NFA to a DFA added plus the time to then preform dfa-simulate was usually not much faster than just preforming Thompson's implementation of  nfa-simulate, especially if most nfa's created did not end up being extremely complicated. 
+  \par \textbf{Answer 2:} I would assume he made this choice for a couple of reasons. The first is I believe that Thompson in 1972 was probably memory constrained, but converting from an NFA to a DFA usually results in a larger DFA. The worst case can be up to $2^n$ nodes more in DFA than NFA  which is exponentially bad in memory constrained environments. Another reason I believe this decision was made is that on top of the memory constraint issues, the time it takes to perform subset construction to convert an NFA to a DFA added plus the time to then perform dfa-simulate was usually not much faster than just preforming Thompson's implementation of nfa-simulate, especially if most nfa's created did not end up being extremely complicated. Additionally, NFAs can handle the OR operator much more efficiently than DFAs because it can explore multiple paths at once. In a DFA, each OR (UNION) operator requires a computationally expensive construction of multiple sub-DFAs for each possible subexpression. For complex expressions with multiple UNION operations, converting from an NFA to a DFA can be extremely space and time expensive.
 
   \item \textbf{Time Complexity:} To simulate an NFA
   $N=\lmtuple{Q}{\Sigma}{\delta}{q_0}{F}$ on string $\sigma$ using the
@@ -53,15 +53,18 @@
   \begin{enumerate}
     \item Prove that NFA simulation is possible in $O(|Q|*|\sigma|)$
       time.%
-      \par \textbf{Answer 3a:} Using Thompson's implementation of NFA simulate it is possible to preform the algoritm in the runtime of $O(|Q|*|\sigma|)$. 1. Initialize two lists a current states list and a list of next states.
-    2. Fill current states list with the start state. 
-    3. For each character in the string loop through the current states and find the next states add to list. If one next state is an accept state break and print string in language. 
-    4. set current states list to be next states list then move to next string. If no new next states break and print string not in language.
-    5. This is time complexity of $|\sigma| * |Q|$ because you go through length of string and for each character you loop through each state. The worst case can be looping through all the states in the NFA which is $|Q|$. This means that it could end up taking  $|\sigma| * |Q|$.
+      \par \textbf{Answer 3a:} Using Thompson's implementation of NFA simulate it is possible to perform the algorithm in the runtime of $O(|Q|*|\sigma|)$. 
+      \begin{enumerate}
+          \item[1.] Initialize two lists a current states list and a list of next states.
+          \item[2.]  Fill current states list with the start state.
+          \item[3.] For each character in the string loop through the current states and find the next states add to list. If one next state is an accept state break and print string in language. 
+          \item[4.] set current states list to be next states list then move to next string. If no new next states break and print string not in language.
+          \item[5.] This is time complexity of $|\sigma| * |Q|$ because you go through length of string and for each character you loop through each state. The worst case can be looping through all the states in the NFA which is $|Q|$. This means that it could end up taking  $|\sigma| * |Q|$.
+      \end{enumerate}
 
     \item Why is there such a difference in performance between
       Thompson's grep and some other ``regex'' engines?
-      \par \textbf{Answer 3b:} The reasons there is a difference in the performance between Thompson's grep and other regex engines like perl is because some regex engines like perl use backtracking in their implementations on nfa simulate while Thompson's uses a smarter approach of perfect guessing which allows the fa to be in multiple states at once. Thompson's approach only tracks reachable states from current states, not the paths themselves. If the string does not belong it will quit as soon as there are no possible next states to transition using the current character of the string being simulated on NFA. In the perl approach it tries one path and if that fails to reach the accept state it will try the next path. And in the instance that a string does not belong in the language the perl method of NFA simulate will result in all possible execution paths being tried before failing. This backtracking simple recursive method is exponential in its runtime in terms of sigma. 
+      \par \textbf{Answer 3b:} The reasons there is a difference in the performance between Thompson's grep and other regex engines like perl is because some regex engines like perl use backtracking in their implementations on nfa simulate while Thompson's uses a smarter approach of perfect guessing which allows the fa to be in multiple states at once. Thompson's approach only tracks reachable states from current states, not the paths themselves. If the string does not belong it will quit as soon as there are no possible next states to transition using the current character of the string being simulated on NFA. In the perl approach it tries one path and if that fails to reach the accept state it will try the next path. And in the instance that a string does not belong in the language the perl method of NFA simulate will result in all possible execution paths being tried before failing. This backtracking simple recursive method is exponential in its runtime in terms of $\sigma$. 
   \end{enumerate}
 
 
