@@ -651,3 +651,58 @@
          (edges (dfa-cartesian-edges dfa-0 dfa-1))
          (new-dfa (make-fa edges start accept)))
     (fa-empty new-dfa)))
+
+(defparameter given_map_wumpus
+  (make-fa '(
+	     (1 right 2)
+	     (2 right 3)
+	     (3 down 6)
+	     (6 down 9)
+	     (9 left 8)
+	     (8 left 7)
+	     (7 up 4)
+	     (4 up 1)
+	     (1 down 4)
+	     (4 down 7)
+	     (7 right 8)
+	     (8 right 9)
+	     (9 up 6)
+	     (6 up 3)
+	     (3 left 2)
+	     (2 left 1))
+	     '1
+	     '()))
+
+(defparameter given_map_human
+  (make-fa '(
+	     (7 right 8)
+	     (8 right 9)
+	     (8 left 7)
+	     (9 up 6)
+	     (6 up 3)
+	     (6 down 9)
+	     (7 up 4)
+	     (4 down 7)
+	     (4 up 1)
+	     (1 down 4)
+	     (1 right 2)
+	     (2 left 1)
+	     (2 right 3)
+	     (1 stay 1)
+	     (2 stay 2)
+	     (4 stay 4)
+	     (6 stay 6)
+	     (7 stay 7)
+	     (8 stay 8)
+	     (9 stay 9))
+	   '7
+	   '(3)))
+
+(defun dfa-wumpus-product (human wumpus)
+ (let ((accept '())
+        (start (list (finite-automaton-start human) (finite-automaton-start wumpus)))
+        (edges (dfa-cartesian-edges human wumpus)))
+    (make-fa edges start accept)))
+	     
+	     
+
