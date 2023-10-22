@@ -125,25 +125,67 @@ automata operations for support.}
   \item For the map in \autoref{fig:map}, construct a discrete event
   system model.  Assume that the human's movements are controllable
   and that the wumpus's movements are not controllable.
+  
+To start, we create finite automatons that describe all possible moves for the wumpus and the human separately. We omit locations that either the wumpus or the human cannot inhabit because of an obstacle. Our discrete event system model is the product finite automaton of each player's respective FA. In the individual FAs, each transition between states has an associated symbol that describes what happens when that edge is taken. The list below shows each possible transition.
+\begin{enumerate}
+    \item human\_up
+    \item human\_down
+    \item human\_left
+    \item human\_right
+    \item human\_stay
+    \item wumpus\_up
+    \item wumpus\_down
+    \item wumpus\_left
+    \item wumpus\_right
+    
+\end{enumerate}Figure \ref{} below shows the graphvis representation of the finite automaton for this map.
 
   \item For your DES model of \autoref{fig:map}, construct a specification
   for the human to avoid the wumpus and escape.
   \begin{enumerate}
     \item Can the human guarantee to avoid being eaten, no matter what
     the wumpus does?  Prove yes or no via automata operations.
+    
+    Given the individual finite automata for the states that the human and wumpus can be in, the product dfa of those two finite automatons describe the entire state space of the game. Given the product dfa, if there exists a path to a state where the human is at the location of the escape point and there is never a state in which the location of the wumpus and the human are the same along that path, we can guarantee that the human can avoid being eaten no matter what the wumpus does.
     \item Can the human always to escape in finite time (fixed
     number of steps), no matter what the wumpus does?  Prove yes or
     no.
+
+    Given the product dfa of the individual finite automatons for the human and the wumpus, we can inspect the dfa in order to guarantee that the human will always escape in finite time. First we start by searching the DES model for a path to an accept state without any intermediate states where the location of the human and the wumpus are the same. Along all of these paths we must also check for cycles, which would mean the human could escape in infinite time.  If any of these cycles exist, we conclude that the human cannot always escape in finite time.
   \end{enumerate}
 
   \item Design a map where the wumpus can always eat the human and
   prove via a DES model that this is the case.
 
+  The map below describes a world where the wumpus will always be able to eat the human.
+  \begin{center}
+  \begin{tikzpicture}
+    \draw[step=1cm,gray,very thin,xshift=.5cm,yshift=.5cm] (-1,-1) grid (4,0);
+    \node at (0cm,0cm) {W};
+    \node at (1cm,0cm) {H};
+    \node at (3cm,0cm) {O};
+    \node at (4cm,0cm) {E};
+  \end{tikzpicture}
+  \label{fig:map3}
+\end{center}
+
   \item Design a map where the human can always escape and prove via a
   DES model that this is the case.
+  
+    The map below describes a world where the wumpus will never be able to eat the human and the human will escape.
+    
+    \begin{center}
+      \begin{tikzpicture}
+        \draw[step=1cm,gray,very thin,xshift=.5cm,yshift=.5cm] (-1,-1) grid (4,0);
+        \node at (0cm,0cm) {E};
+        \node at (2cm,0cm) {H};
+        \node at (3cm,0cm) {O};
+        \node at (4cm,0cm) {W};
+      \end{tikzpicture}
+      \label{fig:map4}
+    \end{center}
 
 \end{enumerate}
-
 \end{document}
 
 
