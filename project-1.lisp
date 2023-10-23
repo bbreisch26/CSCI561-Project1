@@ -698,11 +698,29 @@
 	   '7
 	   '(3)))
 
-(defun dfa-wumpus-product (human wumpus)
- (let ((accept '())
-        (start (list (finite-automaton-start human) (finite-automaton-start wumpus)))
-        (edges (dfa-cartesian-edges human wumpus)))
-    (make-fa edges start accept)))
-	     
-	     
+(defun dfa-cartesian-edges-2 (dfa-0 dfa-1)
+  (labels ((outer-helper (outer-edges dfa-0-edge)
+                         ; Deconstruct the edge in dfa-0
+                         (let ((edge-0-src (nth 0 dfa-0-edge))
+                               (edge-0-dst (nth 2 dfa-0-edge))
+                               (edge-0-tra (nth 1 dfa-0-edge)))
+                           (labels ((inner-helper (inner-edges dfa-1-edge)
+                                                  ; Deconstruct the edge in dfa-1
+                                                  (let ((edge-1-src (nth 0 dfa-1-edge))
+                                                        (edge-1-dst (nth 2 dfa-1-edge))
+                                                        (edge-1-tra (nth 1 dfa-1-edge)))
+                                                        (let ((new-src (list edge-0-src edge-1-src))
+                                                              (new-dst (list edge-0-dst edge-1-dst))
+                                                              (new-tra (list edge-0-tra edge-1-tra)))
+                                                          (cons (list new-src new-tra new-dst) inner-edges))
+                                                        )))
+                             (fold-left #'inner-helper outer-edges (finite-automaton-edges dfa-1))))))
+    (fold-left #'outer-helper (list) (finite-automaton-edges dfa-0))))
 
+(defun dfa-wumpus-product (human wumpus)
+ (let* (;(dfa-human (add-reject-if-necessary-to-dfa human))
+	;(dfa-wumpus (add-reject-if-necessary-to-dfa wumpus))
+	(accept '())
+        (start (list (finite-automaton-start human) (finite-automaton-start wumpus)))
+        (edges (dfa-cartesian-edges-2 human wumpus)))
+    (make-fa edges start accept)))
