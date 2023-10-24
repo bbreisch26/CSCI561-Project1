@@ -720,7 +720,7 @@
 
 (defparameter given_map_human_four
   (make-fa '(
-	     (2 left 1)
+	     (2 escape 1)
 	     (2 stay 2))
 	   '2
 	   '(1)))
