@@ -698,6 +698,40 @@
 	   '7
 	   '(3)))
 
+(defparameter given_map_human_three
+  (make-fa '(
+	     (2 stay 2)
+	     (2 right 3)
+	     (3 stay 3)
+	     (3 left 2)
+	     (2 left 1)
+	     (1 right 2))
+	   '2
+	   '(5)))
+
+(defparameter given_map_wumpus_three
+  (make-fa '(
+	     (1 right 2)
+	     (2 right 3)
+	     (3 left 2)
+	     (2 left 1))
+	   '1
+	   '()))
+
+(defparameter given_map_human_four
+  (make-fa '(
+	     (2 left 1)
+	     (2 stay 2))
+	   '2
+	   '(1)))
+
+(defparameter given_map_wumpus_four
+  (make-fa '(
+	     (5 left 4)
+	     (4 right 5))
+	   '5
+	   '()))
+
 (defun dfa-cartesian-edges-2 (dfa-0 dfa-1)
   (labels ((outer-helper (outer-edges dfa-0-edge)
                          ; Deconstruct the edge in dfa-0
