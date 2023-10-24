@@ -64,7 +64,7 @@
           \item[1.] Initialize two lists a current states list and a list of next states.
           \item[2.]  Fill current states list with the start state.
           \item[3.] For each character in the string loop through the current states and find the next states add to list. If one next state is an accept state break and print string in language. 
-          \item[4.] set current states list to be next states list then move to next string. If no new next states break and print string not in language.
+          \item[4.] Set current states list to be next states list then move to next string. If no new next states exist break and print string not in language.
           \item[5.] This is time complexity of $|\sigma| * |Q|$ because you go through length of string and for each character you loop through each state. The worst case can be looping through all the states in the NFA which is $|Q|$. This means that it could end up taking  $|\sigma| * |Q|$.
       \end{enumerate}
 
@@ -138,7 +138,11 @@ To start, we create finite automatons that describe all possible moves for the w
     \item wumpus\_left
     \item wumpus\_right
     
-\end{enumerate}Figure \ref{} below shows the graphvis representation of the finite automaton for this map.
+\end{enumerate}The figure below shows the graphvis representation of the finite automaton for this map.
+
+\begin{center}
+\includegraphics[scale=0.5]{Q2_graphviz.png}
+\end{center}
 
   \item For your DES model of \autoref{fig:map}, construct a specification
   for the human to avoid the wumpus and escape.
@@ -169,6 +173,10 @@ To start, we create finite automatons that describe all possible moves for the w
   \label{fig:map3}
 \end{center}
 
+The DES model below follows the same setup as Q1 above. As you can see, there are no accept states in the DES model, which is a product DFA of the FA for the wumpus and the human. Because there are no accept states, the wumpus will always eat the human, no matter what the human does.
+\begin{center}
+\includegraphics[scale=0.5]{Q3_graphviz.png}
+\end{center}
   \item Design a map where the human can always escape and prove via a
   DES model that this is the case.
   
@@ -178,13 +186,16 @@ To start, we create finite automatons that describe all possible moves for the w
       \begin{tikzpicture}
         \draw[step=1cm,gray,very thin,xshift=.5cm,yshift=.5cm] (-1,-1) grid (4,0);
         \node at (0cm,0cm) {E};
-        \node at (2cm,0cm) {H};
-        \node at (3cm,0cm) {O};
+        \node at (1cm,0cm) {H};
+        \node at (2cm,0cm) {O};
         \node at (4cm,0cm) {W};
       \end{tikzpicture}
       \label{fig:map4}
     \end{center}
-
+As you can see in the DES model below for this scenario, an accept state is always reachable within infinite time. Technically speaking, the human could choose to stay in its current state for infinite time and neither party would win the game but we will assume that the human is sufficiently scared of the wumpus and will move to the escape point.
+\begin{center}
+\includegraphics[scale=0.5]{Q4_graphviz.png}
+\end{center}
 \end{enumerate}
 \end{document}
 
